@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meine Favoriten</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main>
+    <h1>Meine Favoriten</h1>
+    <p class="intro">Meine regelmäßig besuchten Seiten</p>
+
+    <section class="panel">
+      <form id="linkForm">
+        <input id="titleInput" type="text" placeholder="Name (z. B. Nachrichten)" required>
+        <input id="urlInput" type="url" placeholder="URL (z. B. https://example.com)" required>
+        <input id="categoryInput" type="text" list="categorySuggestions" placeholder="Kategorie (z. B. Wissen)" required>
+        <datalist id="categorySuggestions"></datalist>
+        <button type="submit">Hinzufügen</button>
+      </form>
+    </section>
+
+    <section id="tilesContainer" aria-live="polite"></section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
