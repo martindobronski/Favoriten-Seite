@@ -1,7 +1,7 @@
 const STORAGE_KEY = "favorite-links-v1";
 const CATEGORY_ORDER_KEY = "favorite-category-order-v1";
 const VISIT_COUNTS_KEY = "favorite-visit-counts-v1";
-const MOST_VISITED_CATEGORY = "Am Häufigsten besucht...";
+const MOST_VISITED_CATEGORY = "Die 5 am häufigsten besuchten Seiten...";
 const MOST_VISITED_LIMIT = 5;
 
 const linkForm = document.getElementById("linkForm");
