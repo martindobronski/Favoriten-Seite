@@ -44,9 +44,11 @@ Unter dem Formular befinden sich:
 - `Import Favoriten`: liest Favoriten aus einer JSON-Datei ein
 - `Hilfe`: öffnet diese Bedienungsanleitung als PDF in einem neuen Browser-Tab
 
-Darunter erscheinen die Kategorien. Wenn bereits Favoriten geöffnet wurden, erscheint ganz oben automatisch die Kategorie `Am Häufigsten besucht...` mit den bis zu fünf am häufigsten aufgerufenen Kacheln. Danach folgen die selbst angelegten Kategorien. Jede selbst angelegte Kategorie hat eine Überschrift und eine Lösch-Schaltfläche. Die Lösch-Schaltfläche ist nur nutzbar, wenn die Kategorie leer ist.
+Darunter befindet sich ein Suchfeld, mit dem die angezeigten Kacheln nach Name, URL oder Kategorie gefiltert werden können.
 
-Am unteren Fensterrand wird eine feststehende Footer-Leiste mit Programmversion, Versionsdatum und Copyright-Vermerk angezeigt, zum Beispiel `Version 0.2 · 01.05.2026 · (c) MD. 2026`.
+Danach erscheinen die Kategorien. Wenn bereits Favoriten geöffnet wurden, erscheint ganz oben automatisch die Kategorie `Am häufigsten besucht` mit den bis zu fünf am häufigsten aufgerufenen Kacheln. Danach folgen die selbst angelegten Kategorien. Jede selbst angelegte Kategorie hat eine Überschrift und eine Lösch-Schaltfläche. Die Lösch-Schaltfläche ist nur nutzbar, wenn die Kategorie leer ist.
+
+Am unteren Fensterrand wird eine feststehende Footer-Leiste mit Programmversion, Versionsdatum und Copyright-Vermerk angezeigt, zum Beispiel `Version 0.2 vom 01.05.2026 / © MD. 2026`.
 
 ## Favoriten hinzufügen
 
@@ -74,11 +76,23 @@ Nach dem Klick auf `Hinzufügen` erscheint die neue Kategorie als eigener Abschn
 
 Leere Kategorien sind nützlich, um die Struktur vorzubereiten, bevor Favoriten einsortiert werden.
 
+## Favoriten suchen
+
+Das Suchfeld zwischen Formular und Kachelbereich filtert die angezeigten Kacheln in Echtzeit.
+
+Gesucht wird in:
+
+- Name der Kachel
+- URL der Kachel
+- Kategorie der Kachel
+
+Kategorien ohne Treffer werden ausgeblendet. Wenn keine Kachel zum Suchbegriff passt, erscheint eine entsprechende Meldung. Das Leeren des Suchfelds zeigt wieder alle Kacheln an. Die Suche verändert keine gespeicherten Daten.
+
 ## Favoriten öffnen
 
 Ein Klick auf den Textbereich einer Kachel öffnet die gespeicherte URL in einem neuen Browser-Tab. Dabei wird `noopener noreferrer` verwendet, damit die geöffnete Seite keinen Zugriff auf das Ursprungsfenster erhält.
 
-Jeder Klick auf eine Kachel wird lokal gezählt. Aus diesen Zählern erstellt die Anwendung automatisch die Kategorie `Am Häufigsten besucht...`. Die Kacheln bleiben weiterhin in ihren eigentlichen Kategorien; der automatische Abschnitt ist nur eine zusätzliche Anzeige.
+Jeder Klick auf eine Kachel wird lokal gezählt. Aus diesen Zählern erstellt die Anwendung automatisch die Kategorie `Am häufigsten besucht`. Die Kacheln bleiben weiterhin in ihren eigentlichen Kategorien; der automatische Abschnitt ist nur eine zusätzliche Anzeige. Die Besuchsanzahl wird als kleine Zahl links in der Aktionsleiste jeder Kachel angezeigt.
 
 ## Favoriten bearbeiten
 
@@ -104,7 +118,7 @@ Wenn beim Bearbeiten eine neue Kategorie eingetragen wird, legt die Anwendung di
 
 Jede Kachel hat eine Lösch-Schaltfläche mit Papierkorb-Symbol.
 
-Ein Klick darauf entfernt den Favoriten sofort aus der Liste und speichert die Änderung im Browser. Es gibt keinen zusätzlichen Bestätigungsdialog und keine eingebaute Rückgängig-Funktion.
+Ein Klick darauf öffnet eine Bestätigungsabfrage. Nach Bestätigung wird der Favorit sofort aus der Liste entfernt und die Änderung im Browser gespeichert. Es gibt keine eingebaute Rückgängig-Funktion.
 
 ## Kategorie einer Kachel ändern
 
@@ -131,7 +145,7 @@ So ändern Sie die Reihenfolge:
 
 Die neue Reihenfolge wird sofort im Browser gespeichert.
 
-Wichtig: Eine Kachel kann per Drag-and-drop nicht in eine andere Kategorie gezogen werden. Wenn eine Kachel auf eine andere Kategorie gezogen wird, stellt die Anwendung die ursprüngliche Position wieder her. Kacheln im automatischen Abschnitt `Am Häufigsten besucht...` können nicht manuell sortiert werden.
+Wichtig: Eine Kachel kann per Drag-and-drop nicht in eine andere Kategorie gezogen werden. Wenn eine Kachel auf eine andere Kategorie gezogen wird, stellt die Anwendung die ursprüngliche Position wieder her. Kacheln im automatischen Abschnitt `Am häufigsten besucht` können nicht manuell sortiert werden.
 
 ## Kategorien sortieren
 
@@ -170,6 +184,7 @@ Die Datei enthält:
 ```json
 {
   "exportedAt": "2026-05-01T08:00:00.000Z",
+  "categoryOrder": ["Nachrichten", "Wissen"],
   "links": [
     {
       "id": "beispiel-id",
@@ -181,7 +196,7 @@ Die Datei enthält:
 }
 ```
 
-`exportedAt` ist der Exportzeitpunkt im ISO-Format. Die eigentlichen Favoriten stehen im Array `links`.
+`exportedAt` ist der Exportzeitpunkt im ISO-Format. `categoryOrder` enthält die gespeicherte Reihenfolge der Kategorien. Die eigentlichen Favoriten stehen im Array `links`.
 
 ### Import
 
@@ -189,7 +204,7 @@ Ein Klick auf `Import Favoriten` öffnet die Dateiauswahl für JSON-Dateien.
 
 Unterstützt werden zwei Formate:
 
-- ein Objekt mit einem Feld `links`
+- ein Objekt mit einem Feld `links` (und optionalem Feld `categoryOrder`)
 - direkt ein Array von Link-Objekten
 
 Beim Import werden nur gültige Einträge übernommen. Ein gültiger Eintrag braucht mindestens:
@@ -201,10 +216,8 @@ Falls eine importierte URL kein Protokoll enthält, ergänzt die Anwendung `http
 
 Nach dem Einlesen fragt die Anwendung, ob die vorhandenen Links ersetzt werden sollen:
 
-- `OK`: bestehende Favoriten werden durch die importierten Favoriten ersetzt
-- `Abbrechen`: importierte Favoriten werden vor die vorhandenen Favoriten gesetzt
-
-Kategorien aus importierten Favoriten werden beim nächsten Rendern automatisch in die Kategorie-Reihenfolge aufgenommen.
+- `OK`: bestehende Favoriten werden durch die importierten Favoriten ersetzt; wenn die Importdatei ein Feld `categoryOrder` enthält, wird auch die Kategorie-Reihenfolge übernommen
+- `Abbrechen`: importierte Favoriten werden vor die vorhandenen Favoriten gesetzt; neue Kategorien aus der Importdatei werden vorne in die bestehende Reihenfolge eingetragen
 
 ## Datenspeicherung
 
@@ -240,6 +253,8 @@ Das Layout ist responsiv:
 
 Die Anwendung unterstützt helle und dunkle Darstellung über die Systemeinstellung `prefers-color-scheme`.
 
+Jede Kachel zeigt das Favicon der verlinkten Website an. Falls kein Favicon geladen werden kann, wird kein Symbol angezeigt.
+
 Viele Symbol-Schaltflächen zeigen beim Überfahren mit der Maus einen Tooltip, zum Beispiel:
 
 - `Reihenfolge ändern`
@@ -255,8 +270,7 @@ Die Anwendung ist bewusst lokal und einfach gehalten. Daraus ergeben sich diese 
 - Keine Synchronisation zwischen Geräten
 - Keine Benutzerkonten
 - Keine serverseitige Sicherung
-- Keine Suchfunktion
-- Keine Bestätigung vor dem Löschen einzelner Kacheln
+- Keine Suchfunktion in gespeicherten Favoriten (nur visuelle Filterung)
 - Keine Rückgängig-Funktion
 - Kein Drag-and-drop-Wechsel einer Kachel in eine andere Kategorie
 
@@ -282,19 +296,22 @@ Prüfen Sie, ob die Datei gültiges JSON enthält und ob die Einträge `title` u
 
 Beim Laden der Seite liest `app.js` die Favoriten und die Kategorie-Reihenfolge aus `localStorage`. Anschließend wird die Oberfläche vollständig aus JavaScript erzeugt. Änderungen an Favoriten oder Kategorien werden sofort gespeichert und danach neu gerendert.
 
+Die Trennung zwischen Daten-Synchronisation und Darstellung erfolgt über zwei Funktionen: `update()` synchronisiert den abgeleiteten Zustand (Kategorie-Reihenfolge, Besuchszähler) und ruft anschließend `render()` auf. `render()` selbst ist frei von Seiteneffekten und liest nur den aktuellen Zustand.
+
 Die wichtigsten Funktionen sind:
 
 - `normalizeUrl`: ergänzt fehlendes URL-Protokoll
 - `normalizeCategory`: trimmt Kategorien und setzt bei leerem Wert `Allgemein`
-- `loadLinks` und `saveLinks`: laden und speichern Favoriten
+- `loadLinks`, `saveLinks`, `setLinks`: laden, speichern und ersetzen Favoriten
 - `loadCategoryOrder` und `saveCategoryOrder`: laden und speichern die Kategorie-Reihenfolge
 - `loadVisitCounts` und `saveVisitCounts`: laden und speichern Besuchszähler
 - `recordVisit` und `getMostVisitedLinks`: zählen Link-Aufrufe und ermitteln die Top-5-Kacheln
 - `sanitizeImportedLinks`: prüft und bereinigt importierte JSON-Daten
-- `render`: baut Kategorien, Kacheln und Vorschlagsliste neu auf
+- `update`: synchronisiert Zustand (syncCategoryOrder, pruneVisitCounts) und ruft render auf
+- `render`: baut Kategorien, Kacheln und Vorschlagsliste neu auf; berücksichtigt den Suchfilter
 - `renderSortCategoriesList`: baut die Sortierliste im Kategorie-Dialog auf
 - `openSortCategoriesDialog`: öffnet den Dialog zum Sortieren der Kategorien
-- `createTile`: erzeugt eine einzelne Favoriten-Kachel mit Aktionen
+- `createTile`: erzeugt eine einzelne Favoriten-Kachel mit Favicon, Besuchszähler und Aktionen
 - `openEditDialog`: öffnet den Bearbeitungsdialog
 - `reassignLinkCategory`: weist eine Kachel einer anderen Kategorie zu
 - `moveLink`: ändert die Reihenfolge von Kacheln per Drag-and-drop

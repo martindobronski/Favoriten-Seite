@@ -76,6 +76,31 @@ h1 {
   flex-wrap: wrap;
 }
 
+/* ── Search bar ─────────────────────────────────────────── */
+
+.search-bar {
+  margin-bottom: 1.2rem;
+}
+
+.search-bar input[type="search"] {
+  width: 100%;
+  padding: 0.72rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(96, 112, 128, 0.35);
+  background: var(--surface);
+  box-shadow: var(--tile-shadow);
+  font: inherit;
+  color: inherit;
+}
+
+.search-bar input[type="search"]:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+/* ── Form & inputs ──────────────────────────────────────── */
+
 form {
   display: grid;
   grid-template-columns: 1.2fr 2fr 1.2fr auto;
@@ -125,6 +150,8 @@ button:hover {
 .secondary-btn:hover {
   background: rgba(96, 112, 128, 0.1);
 }
+
+/* ── Tiles grid ─────────────────────────────────────────── */
 
 .tiles {
   display: grid;
@@ -224,6 +251,8 @@ button:hover {
   transform: translateY(0);
 }
 
+/* ── Tile ───────────────────────────────────────────────── */
+
 .tile {
   display: flex;
   flex-direction: column;
@@ -259,6 +288,71 @@ button:hover {
   justify-content: flex-end;
   padding: 0.45rem 0.6rem 0;
 }
+
+/* Title row: favicon + title text side by side */
+.tile-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.45rem;
+}
+
+.tile-favicon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  object-fit: contain;
+}
+
+.tile-title {
+  font-weight: 700;
+  word-break: break-word;
+  /* margin-bottom handled by .tile-title-row now */
+}
+
+.tile-url {
+  color: var(--muted);
+  font-size: 0.92rem;
+  word-break: break-all;
+}
+
+/* ── Tile actions ───────────────────────────────────────── */
+
+.tile-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: auto;
+  padding: 0 0.65rem 0.65rem;
+}
+
+/* Left spacer – holds the visit badge (if any), takes remaining space */
+.tile-actions-spacer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+/* Visit count badge */
+.visit-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--primary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: default;
+  user-select: none;
+}
+
+/* ── Drag handle ────────────────────────────────────────── */
 
 .drag-handle {
   position: relative;
@@ -308,25 +402,7 @@ button:hover {
   transform: translateY(0);
 }
 
-.tile-title {
-  font-weight: 650;
-  margin-bottom: 0.45rem;
-  word-break: break-word;
-}
-
-.tile-url {
-  color: var(--muted);
-  font-size: 0.92rem;
-  word-break: break-all;
-}
-
-.tile-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.35rem;
-  margin-top: auto;
-  padding: 0 0.65rem 0.65rem;
-}
+/* ── Icon buttons (change category, edit, delete) ───────── */
 
 .change-category-btn {
   position: relative;
@@ -417,6 +493,8 @@ button:hover {
   transform: translateY(0);
 }
 
+/* ── Category context menu ──────────────────────────────── */
+
 .category-menu {
   position: fixed;
   z-index: 999;
@@ -446,6 +524,8 @@ button:hover {
 .category-menu-item:hover {
   background: rgba(96, 112, 128, 0.12);
 }
+
+/* ── Delete button ──────────────────────────────────────── */
 
 .delete-btn {
   position: relative;
@@ -491,6 +571,8 @@ button:hover {
   background: rgba(220, 38, 38, 0.08);
 }
 
+/* ── Empty states ───────────────────────────────────────── */
+
 .empty {
   color: var(--muted);
   text-align: center;
@@ -499,6 +581,8 @@ button:hover {
   border-radius: var(--radius);
   box-shadow: var(--tile-shadow);
 }
+
+/* ── Footer ─────────────────────────────────────────────── */
 
 .app-version {
   position: fixed;
@@ -514,6 +598,8 @@ button:hover {
   text-align: right;
   z-index: 20;
 }
+
+/* ── Dialogs ─────────────────────────────────────────────── */
 
 .edit-dialog,
 .sort-categories-dialog {
@@ -550,6 +636,8 @@ button:hover {
   justify-content: flex-end;
   gap: 0.5rem;
 }
+
+/* ── Sort categories dialog ─────────────────────────────── */
 
 .sort-categories-list {
   display: grid;
@@ -664,6 +752,8 @@ button:hover {
   padding: 0.8rem;
   text-align: center;
 }
+
+/* ── Responsive ─────────────────────────────────────────── */
 
 @media (max-width: 720px) {
   form {

@@ -1,7 +1,8 @@
 const STORAGE_KEY = "favorite-links-v1";
 const CATEGORY_ORDER_KEY = "favorite-category-order-v1";
 const VISIT_COUNTS_KEY = "favorite-visit-counts-v1";
-const MOST_VISITED_CATEGORY = "Die 5 am häufigsten besuchten Seiten...";
+// Consistent category name (was "Die 5 am häufigsten besuchten Seiten..." before)
+const MOST_VISITED_CATEGORY = "Am häufigsten besucht";
 const MOST_VISITED_LIMIT = 5;
 
 const linkForm = document.getElementById("linkForm");
@@ -24,16 +25,22 @@ const editTitleInput = document.getElementById("editTitleInput");
 const editUrlInput = document.getElementById("editUrlInput");
 const editCategoryInput = document.getElementById("editCategoryInput");
 const editCancelBtn = document.getElementById("editCancelBtn");
+const searchInput = document.getElementById("searchInput");
 
 const defaultLinks = [
   { id: crypto.randomUUID(), title: "Tagesschau", url: "https://www.tagesschau.de", category: "Nachrichten" },
   { id: crypto.randomUUID(), title: "Wikipedia", url: "https://de.wikipedia.org", category: "Wissen" }
 ];
+
 let draggedId = null;
 let draggedSortCategory = null;
 let activeCategoryMenu = null;
 let editingLinkId = null;
 let pendingCategoryOrder = [];
+// Search state: lowercase query string
+let searchQuery = "";
+
+// ── URL / category helpers ───────────────────────────────────────────────────
 
 function normalizeUrl(rawUrl) {
   const value = rawUrl.trim();
@@ -46,6 +53,8 @@ function normalizeCategory(rawCategory) {
   const value = rawCategory.trim();
   return value || "Allgemein";
 }
+
+// ── Storage: links ───────────────────────────────────────────────────────────
 
 function loadLinks() {
   try {
@@ -68,6 +77,17 @@ function saveLinks(links) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
 }
 
+/**
+ * Replaces the global links array and immediately persists it.
+ * Use this instead of direct assignment + saveLinks() for full replacements.
+ */
+function setLinks(newLinks) {
+  links = newLinks;
+  saveLinks(links);
+}
+
+// ── Storage: category order ──────────────────────────────────────────────────
+
 function loadCategoryOrder() {
   try {
     const fromStorage = localStorage.getItem(CATEGORY_ORDER_KEY);
@@ -83,6 +103,8 @@ function loadCategoryOrder() {
 function saveCategoryOrder(order) {
   localStorage.setItem(CATEGORY_ORDER_KEY, JSON.stringify(order));
 }
+
+// ── Storage: visit counts ────────────────────────────────────────────────────
 
 function loadVisitCounts() {
   try {
@@ -125,8 +147,11 @@ function recordVisit(linkId) {
   if (!linkId) return;
   visitCounts[linkId] = (visitCounts[linkId] || 0) + 1;
   saveVisitCounts(visitCounts);
-  setTimeout(render, 0);
+  // re-render without full data sync (visit counts already saved)
+  setTimeout(update, 0);
 }
+
+// ── Most-visited helpers ─────────────────────────────────────────────────────
 
 function getMostVisitedLinks() {
   return links
@@ -139,6 +164,8 @@ function getMostVisitedLinks() {
     .slice(0, MOST_VISITED_LIMIT);
 }
 
+// ── Category order helpers ───────────────────────────────────────────────────
+
 function getExistingCategories() {
   return [...new Set(links
     .map(link => normalizeCategory(link.category))
@@ -146,6 +173,10 @@ function getExistingCategories() {
   )];
 }
 
+/**
+ * Ensures every category that exists in links is present in categoryOrder.
+ * Called by update() before render() so render() stays side-effect-free.
+ */
 function syncCategoryOrder() {
   const existing = getExistingCategories();
   categoryOrder = categoryOrder.filter(category => category !== MOST_VISITED_CATEGORY);
@@ -158,6 +189,8 @@ function syncCategoryOrder() {
 
   saveCategoryOrder(categoryOrder);
 }
+
+// ── Import sanitisation ──────────────────────────────────────────────────────
 
 function sanitizeImportedLinks(rawLinks) {
   if (!Array.isArray(rawLinks)) return [];
@@ -182,6 +215,8 @@ function sanitizeImportedLinks(rawLinks) {
     .filter(link => link && link.title);
 }
 
+// ── Drag-and-drop: tile reordering ───────────────────────────────────────────
+
 function moveLink(fromId, toId, targetCategory) {
   if (!fromId || !toId || fromId === toId) return;
 
@@ -199,7 +234,7 @@ function moveLink(fromId, toId, targetCategory) {
   const adjustedToIndex = fromIndex < toIndex ? toIndex - 1 : toIndex;
   links.splice(adjustedToIndex, 0, moved);
   saveLinks(links);
-  render();
+  update();
 }
 
 function moveLinkToCategoryEnd(fromId, targetCategory) {
@@ -217,7 +252,7 @@ function moveLinkToCategoryEnd(fromId, targetCategory) {
   moved.category = normalizedCategory;
   links.push(moved);
   saveLinks(links);
-  render();
+  update();
 }
 
 function reassignLinkCategory(linkId, nextCategory) {
@@ -233,8 +268,10 @@ function reassignLinkCategory(linkId, nextCategory) {
     saveCategoryOrder(categoryOrder);
   }
 
-  render();
+  update();
 }
+
+// ── Edit dialog ──────────────────────────────────────────────────────────────
 
 function openEditDialog(linkId) {
   const link = links.find(item => item.id === linkId);
@@ -246,6 +283,8 @@ function openEditDialog(linkId) {
   editCategoryInput.value = normalizeCategory(link.category);
   editDialog.showModal();
 }
+
+// ── Category context menu ────────────────────────────────────────────────────
 
 function closeCategoryMenu() {
   if (!activeCategoryMenu) return;
@@ -305,6 +344,8 @@ function openCategoryMenu(triggerElement, link) {
   activeCategoryMenu = menu;
 }
 
+// ── Category deletion ────────────────────────────────────────────────────────
+
 function deleteEmptyCategory(category) {
   const hasLinks = links.some(link => normalizeCategory(link.category) === category);
   if (hasLinks) {
@@ -314,8 +355,10 @@ function deleteEmptyCategory(category) {
 
   categoryOrder = categoryOrder.filter(item => item !== category);
   saveCategoryOrder(categoryOrder);
-  render();
+  update();
 }
+
+// ── Sort-categories dialog ───────────────────────────────────────────────────
 
 function movePendingCategory(fromIndex, toIndex) {
   if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return;
@@ -455,12 +498,28 @@ function openSortCategoriesDialog() {
   sortCategoriesDialog.showModal();
 }
 
+// ── Tile factory ─────────────────────────────────────────────────────────────
+
 function createTile(link, options = {}) {
   const { isAutomatic = false } = options;
   const tile = document.createElement("article");
   tile.className = "tile";
   tile.dataset.id = link.id;
 
+  // ── Favicon ────────────────────────────────────────────────────────────────
+  const favicon = document.createElement("img");
+  favicon.className = "tile-favicon";
+  favicon.alt = "";
+  favicon.setAttribute("aria-hidden", "true");
+  try {
+    const domain = new URL(link.url).hostname;
+    favicon.src = `https://www.google.com/s2/favicons?sz=32&domain=${domain}`;
+  } catch {
+    favicon.style.display = "none";
+  }
+  favicon.addEventListener("error", () => { favicon.style.display = "none"; });
+
+  // ── Drag handle (only for manually sorted tiles) ───────────────────────────
   const dragHandle = document.createElement("button");
   dragHandle.className = "drag-handle";
   dragHandle.type = "button";
@@ -469,6 +528,7 @@ function createTile(link, options = {}) {
   dragHandle.setAttribute("aria-label", `Reihenfolge von ${link.title} ändern`);
   dragHandle.draggable = true;
 
+  // ── Anchor (opens link) ────────────────────────────────────────────────────
   const anchor = document.createElement("a");
   anchor.className = "tile-link";
   anchor.href = link.url;
@@ -478,17 +538,39 @@ function createTile(link, options = {}) {
     recordVisit(link.id);
   });
 
+  // Title row: favicon + title text
+  const titleRow = document.createElement("div");
+  titleRow.className = "tile-title-row";
+
   const title = document.createElement("div");
   title.className = "tile-title";
   title.textContent = link.title;
+
+  titleRow.append(favicon, title);
 
   const url = document.createElement("div");
   url.className = "tile-url";
   url.textContent = link.url;
 
+  // ── Actions row ────────────────────────────────────────────────────────────
   const actions = document.createElement("div");
   actions.className = "tile-actions";
 
+  // Left spacer – optionally contains visit-count badge
+  const actionsLeft = document.createElement("span");
+  actionsLeft.className = "tile-actions-spacer";
+
+  const visitCount = visitCounts[link.id] || 0;
+  if (visitCount > 0) {
+    const badge = document.createElement("span");
+    badge.className = "visit-badge";
+    badge.textContent = visitCount > 999 ? "999+" : String(visitCount);
+    badge.title = `${visitCount} Mal besucht`;
+    badge.setAttribute("aria-label", `${visitCount} Mal besucht`);
+    actionsLeft.append(badge);
+  }
+
+  // Delete button – with confirmation
   const deleteBtn = document.createElement("button");
   deleteBtn.className = "delete-btn";
   deleteBtn.type = "button";
@@ -498,9 +580,9 @@ function createTile(link, options = {}) {
   deleteBtn.addEventListener("click", event => {
     event.stopPropagation();
     event.preventDefault();
-    links = links.filter(item => item.id !== link.id);
-    saveLinks(links);
-    render();
+    if (!confirm(`„${link.title}" wirklich löschen?`)) return;
+    setLinks(links.filter(item => item.id !== link.id));
+    update();
   });
 
   const changeCategoryBtn = document.createElement("button");
@@ -527,6 +609,7 @@ function createTile(link, options = {}) {
     openEditDialog(link.id);
   });
 
+  // Drag-and-drop wiring (only for non-automatic tiles)
   if (!isAutomatic) {
     dragHandle.addEventListener("dragstart", event => {
       draggedId = link.id;
@@ -561,16 +644,17 @@ function createTile(link, options = {}) {
     });
   }
 
-  anchor.append(title, url);
+  anchor.append(titleRow, url);
+  actions.append(actionsLeft);
   if (!isAutomatic) {
     actions.append(dragHandle);
   }
-  actions.append(changeCategoryBtn);
-  actions.append(editBtn);
-  actions.append(deleteBtn);
+  actions.append(changeCategoryBtn, editBtn, deleteBtn);
   tile.append(anchor, actions);
   return tile;
 }
+
+// ── Category-suggestions datalist ────────────────────────────────────────────
 
 function renderCategorySuggestions() {
   const categories = [...new Set(links.map(link => normalizeCategory(link.category)))];
@@ -582,6 +666,8 @@ function renderCategorySuggestions() {
     categorySuggestions.append(option);
   });
 }
+
+// ── Category section builder ──────────────────────────────────────────────────
 
 function renderCategorySection(category, items, options = {}) {
   const { isAutomatic = false } = options;
@@ -651,10 +737,22 @@ function renderCategorySection(category, items, options = {}) {
   tilesContainer.append(section);
 }
 
-function render() {
-  tilesContainer.innerHTML = "";
+// ── State update ──────────────────────────────────────────────────────────────
+//
+// update() is the single entry-point for any state change.
+// It syncs derived state (category order, visit counts) BEFORE handing off
+// to render(), which is kept side-effect-free and only reads state.
+
+function update() {
   syncCategoryOrder();
   pruneVisitCounts();
+  render();
+}
+
+// ── Render (read-only, no side effects) ───────────────────────────────────────
+
+function render() {
+  tilesContainer.innerHTML = "";
 
   if (!links.length && !categoryOrder.length) {
     const empty = document.createElement("div");
@@ -665,39 +763,83 @@ function render() {
     return;
   }
 
+  // Apply search filter to links for display only; underlying data is unchanged
+  const q = searchQuery;
+  const displayLinks = q
+    ? links.filter(link =>
+        link.title.toLowerCase().includes(q) ||
+        link.url.toLowerCase().includes(q) ||
+        normalizeCategory(link.category).toLowerCase().includes(q)
+      )
+    : links;
+
+  // Build category → tiles map from filtered links
   const groupedLinks = new Map();
-  links.forEach(link => {
+  displayLinks.forEach(link => {
     const category = normalizeCategory(link.category);
-    if (!groupedLinks.has(category)) {
-      groupedLinks.set(category, []);
-    }
+    if (!groupedLinks.has(category)) groupedLinks.set(category, []);
     groupedLinks.get(category).push(link);
   });
 
+  // Most-visited section (based on full link list, then filtered by query)
   const mostVisitedLinks = getMostVisitedLinks();
-  if (mostVisitedLinks.length) {
-    renderCategorySection(MOST_VISITED_CATEGORY, mostVisitedLinks, { isAutomatic: true });
+  const displayMostVisited = q
+    ? mostVisitedLinks.filter(link =>
+        link.title.toLowerCase().includes(q) ||
+        link.url.toLowerCase().includes(q) ||
+        normalizeCategory(link.category).toLowerCase().includes(q)
+      )
+    : mostVisitedLinks;
+
+  if (displayMostVisited.length) {
+    renderCategorySection(MOST_VISITED_CATEGORY, displayMostVisited, { isAutomatic: true });
   }
 
+  // User-defined categories
+  let anyVisible = displayMostVisited.length > 0;
   categoryOrder.forEach(category => {
-    renderCategorySection(category, groupedLinks.get(category) || []);
+    const items = groupedLinks.get(category) || [];
+    // When searching, skip categories that have no matching tiles
+    if (q && !items.length) return;
+    anyVisible = true;
+    renderCategorySection(category, items);
   });
+
+  // No search results
+  if (q && !anyVisible) {
+    const noResults = document.createElement("div");
+    noResults.className = "empty";
+    noResults.textContent = `Keine Favoriten für „${searchQuery}" gefunden.`;
+    tilesContainer.append(noResults);
+  }
 
   renderCategorySuggestions();
 }
+
+// ── Initialisation ────────────────────────────────────────────────────────────
 
 let links = loadLinks();
 let categoryOrder = loadCategoryOrder();
 let visitCounts = loadVisitCounts();
 saveLinks(links);
-render();
+update();
 
+// ── Global event listeners ────────────────────────────────────────────────────
+
+// Close category context-menu on outside click
 document.addEventListener("click", event => {
   if (!activeCategoryMenu) return;
   if (event.target.closest(".category-menu") || event.target.closest(".change-category-btn")) return;
   closeCategoryMenu();
 });
 
+// Search – only re-render (data has not changed)
+searchInput.addEventListener("input", () => {
+  searchQuery = searchInput.value.trim().toLowerCase();
+  render();
+});
+
+// Add link / empty category
 linkForm.addEventListener("submit", event => {
   event.preventDefault();
   const title = titleInput.value.trim();
@@ -711,7 +853,7 @@ linkForm.addEventListener("submit", event => {
       categoryOrder.unshift(category);
       saveCategoryOrder(categoryOrder);
     }
-    render();
+    update();
     linkForm.reset();
     categoryInput.focus();
     return;
@@ -735,14 +877,16 @@ linkForm.addEventListener("submit", event => {
     categoryOrder.unshift(category);
     saveCategoryOrder(categoryOrder);
   }
-  render();
+  update();
   linkForm.reset();
   titleInput.focus();
 });
 
+// Export – now includes categoryOrder so it can be fully restored on import
 exportBtn.addEventListener("click", () => {
   const payload = {
     exportedAt: new Date().toISOString(),
+    categoryOrder,
     links
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
@@ -756,6 +900,7 @@ exportBtn.addEventListener("click", () => {
   URL.revokeObjectURL(url);
 });
 
+// Import
 importBtn.addEventListener("click", () => {
   importFileInput.click();
 });
@@ -769,7 +914,7 @@ sortCategoriesForm.addEventListener("submit", event => {
   categoryOrder = [...pendingCategoryOrder];
   saveCategoryOrder(categoryOrder);
   pendingCategoryOrder = [];
-  render();
+  update();
   sortCategoriesDialog.close();
 });
 
@@ -792,18 +937,36 @@ importFileInput.addEventListener("change", async event => {
       return;
     }
 
+    // Read categoryOrder from export file if present
+    const importedCategoryOrder = Array.isArray(parsed.categoryOrder)
+      ? parsed.categoryOrder
+          .filter(c => typeof c === "string" && c.trim())
+          .map(c => c.trim())
+      : [];
+
     const shouldReplace = confirm(
       `Es wurden ${importedLinks.length} Links gefunden. Bestehende Links ersetzen?`
     );
 
     if (shouldReplace) {
-      links = importedLinks;
+      setLinks(importedLinks);
+      if (importedCategoryOrder.length) {
+        categoryOrder = importedCategoryOrder;
+        saveCategoryOrder(categoryOrder);
+      }
     } else {
-      links = [...importedLinks, ...links];
+      setLinks([...importedLinks, ...links]);
+      // Prepend any new categories from the import to existing order
+      if (importedCategoryOrder.length) {
+        const newCategories = importedCategoryOrder.filter(c => !categoryOrder.includes(c));
+        if (newCategories.length) {
+          categoryOrder = [...newCategories, ...categoryOrder];
+          saveCategoryOrder(categoryOrder);
+        }
+      }
     }
 
-    saveLinks(links);
-    render();
+    update();
   } catch {
     alert("Import fehlgeschlagen. Bitte eine gültige JSON-Datei auswählen.");
   } finally {
@@ -844,7 +1007,7 @@ editForm.addEventListener("submit", event => {
     saveCategoryOrder(categoryOrder);
   }
 
-  render();
+  update();
   editDialog.close();
   editingLinkId = null;
 });

@@ -30,17 +30,20 @@
       </div>
     </section>
 
+    <div class="search-bar">
+      <input id="searchInput" type="search" placeholder="Favoriten durchsuchen …" aria-label="Favoriten durchsuchen">
+    </div>
+
     <section id="tilesContainer" aria-live="polite"></section>
 
     <footer class="app-version" aria-label="Programmversion">
       Version 0.2 vom 01.05.2026 / &copy; MD. 2026
-</footer>
     </footer>
   </main>
 
-  <dialog id="editDialog" class="edit-dialog">
+  <dialog id="editDialog" class="edit-dialog" aria-labelledby="editDialogTitle">
     <form id="editForm" class="edit-form" method="dialog">
-      <h3>Kachel bearbeiten</h3>
+      <h3 id="editDialogTitle">Kachel bearbeiten</h3>
       <input id="editTitleInput" type="text" placeholder="Titel" required>
       <input id="editUrlInput" type="url" placeholder="URL" required>
       <input id="editCategoryInput" type="text" list="categorySuggestions" placeholder="Kategorie" required>
@@ -51,9 +54,9 @@
     </form>
   </dialog>
 
-  <dialog id="sortCategoriesDialog" class="sort-categories-dialog">
+  <dialog id="sortCategoriesDialog" class="sort-categories-dialog" aria-labelledby="sortCategoriesDialogTitle">
     <form id="sortCategoriesForm" class="sort-categories-form" method="dialog">
-      <h3>Kategorien sortieren</h3>
+      <h3 id="sortCategoriesDialogTitle">Kategorien sortieren</h3>
       <div id="sortCategoriesList" class="sort-categories-list" aria-live="polite"></div>
       <div class="sort-actions">
         <button type="button" id="sortCategoriesCancelBtn" class="secondary-btn">Abbrechen</button>
