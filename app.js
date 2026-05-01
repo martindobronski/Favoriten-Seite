@@ -1,5 +1,8 @@
 const STORAGE_KEY = "favorite-links-v1";
 const CATEGORY_ORDER_KEY = "favorite-category-order-v1";
+const VISIT_COUNTS_KEY = "favorite-visit-counts-v1";
+const MOST_VISITED_CATEGORY = "Am Häufigsten besucht...";
+const MOST_VISITED_LIMIT = 5;
 
 const linkForm = document.getElementById("linkForm");
 const titleInput = document.getElementById("titleInput");
@@ -81,12 +84,72 @@ function saveCategoryOrder(order) {
   localStorage.setItem(CATEGORY_ORDER_KEY, JSON.stringify(order));
 }
 
+function loadVisitCounts() {
+  try {
+    const fromStorage = localStorage.getItem(VISIT_COUNTS_KEY);
+    if (!fromStorage) return {};
+    const parsed = JSON.parse(fromStorage);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+
+    return Object.fromEntries(
+      Object.entries(parsed).filter(([id, count]) => (
+        typeof id === "string" && id.trim() && Number.isInteger(count) && count > 0
+      ))
+    );
+  } catch {
+    return {};
+  }
+}
+
+function saveVisitCounts(counts) {
+  localStorage.setItem(VISIT_COUNTS_KEY, JSON.stringify(counts));
+}
+
+function pruneVisitCounts() {
+  const linkIds = new Set(links.map(link => link.id));
+  let didChange = false;
+
+  Object.keys(visitCounts).forEach(id => {
+    if (!linkIds.has(id)) {
+      delete visitCounts[id];
+      didChange = true;
+    }
+  });
+
+  if (didChange) {
+    saveVisitCounts(visitCounts);
+  }
+}
+
+function recordVisit(linkId) {
+  if (!linkId) return;
+  visitCounts[linkId] = (visitCounts[linkId] || 0) + 1;
+  saveVisitCounts(visitCounts);
+  setTimeout(render, 0);
+}
+
+function getMostVisitedLinks() {
+  return links
+    .filter(link => visitCounts[link.id] > 0)
+    .sort((first, second) => {
+      const countDifference = visitCounts[second.id] - visitCounts[first.id];
+      if (countDifference !== 0) return countDifference;
+      return first.title.localeCompare(second.title, "de", { sensitivity: "base" });
+    })
+    .slice(0, MOST_VISITED_LIMIT);
+}
+
 function getExistingCategories() {
-  return [...new Set(links.map(link => normalizeCategory(link.category)))];
+  return [...new Set(links
+    .map(link => normalizeCategory(link.category))
+    .filter(category => category !== MOST_VISITED_CATEGORY)
+  )];
 }
 
 function syncCategoryOrder() {
   const existing = getExistingCategories();
+  categoryOrder = categoryOrder.filter(category => category !== MOST_VISITED_CATEGORY);
+
   existing.forEach(category => {
     if (!categoryOrder.includes(category)) {
       categoryOrder.unshift(category);
@@ -263,6 +326,14 @@ function movePendingCategory(fromIndex, toIndex) {
   renderSortCategoriesList();
 }
 
+function movePendingCategoryToStart(index) {
+  movePendingCategory(index, 0);
+}
+
+function movePendingCategoryToEnd(index) {
+  movePendingCategory(index, pendingCategoryOrder.length - 1);
+}
+
 function renderSortCategoriesList() {
   sortCategoriesList.innerHTML = "";
 
@@ -283,17 +354,30 @@ function renderSortCategoriesList() {
     const handle = document.createElement("span");
     handle.className = "sort-category-handle";
     handle.textContent = "≡";
+    handle.title = "Kategorie ziehen";
     handle.setAttribute("aria-hidden", "true");
 
     const label = document.createElement("span");
     label.className = "sort-category-label";
     label.textContent = category;
 
+    const moveTopBtn = document.createElement("button");
+    moveTopBtn.type = "button";
+    moveTopBtn.className = "sort-icon-btn";
+    moveTopBtn.textContent = "⇧";
+    moveTopBtn.disabled = index === 0;
+    moveTopBtn.setAttribute("data-tooltip", "Ganz nach oben");
+    moveTopBtn.setAttribute("aria-label", `${category} ganz nach oben verschieben`);
+    moveTopBtn.addEventListener("click", () => {
+      movePendingCategoryToStart(index);
+    });
+
     const moveUpBtn = document.createElement("button");
     moveUpBtn.type = "button";
     moveUpBtn.className = "sort-icon-btn";
     moveUpBtn.textContent = "↑";
     moveUpBtn.disabled = index === 0;
+    moveUpBtn.setAttribute("data-tooltip", "Eine Position nach oben");
     moveUpBtn.setAttribute("aria-label", `${category} nach oben verschieben`);
     moveUpBtn.addEventListener("click", () => {
       movePendingCategory(index, index - 1);
@@ -304,9 +388,21 @@ function renderSortCategoriesList() {
     moveDownBtn.className = "sort-icon-btn";
     moveDownBtn.textContent = "↓";
     moveDownBtn.disabled = index === pendingCategoryOrder.length - 1;
+    moveDownBtn.setAttribute("data-tooltip", "Eine Position nach unten");
     moveDownBtn.setAttribute("aria-label", `${category} nach unten verschieben`);
     moveDownBtn.addEventListener("click", () => {
       movePendingCategory(index, index + 1);
+    });
+
+    const moveBottomBtn = document.createElement("button");
+    moveBottomBtn.type = "button";
+    moveBottomBtn.className = "sort-icon-btn";
+    moveBottomBtn.textContent = "⇩";
+    moveBottomBtn.disabled = index === pendingCategoryOrder.length - 1;
+    moveBottomBtn.setAttribute("data-tooltip", "Ganz nach unten");
+    moveBottomBtn.setAttribute("aria-label", `${category} ganz nach unten verschieben`);
+    moveBottomBtn.addEventListener("click", () => {
+      movePendingCategoryToEnd(index);
     });
 
     item.addEventListener("dragstart", event => {
@@ -345,7 +441,7 @@ function renderSortCategoriesList() {
 
     const controls = document.createElement("div");
     controls.className = "sort-category-controls";
-    controls.append(moveUpBtn, moveDownBtn);
+    controls.append(moveTopBtn, moveUpBtn, moveDownBtn, moveBottomBtn);
 
     item.append(handle, label, controls);
     sortCategoriesList.append(item);
@@ -359,7 +455,8 @@ function openSortCategoriesDialog() {
   sortCategoriesDialog.showModal();
 }
 
-function createTile(link) {
+function createTile(link, options = {}) {
+  const { isAutomatic = false } = options;
   const tile = document.createElement("article");
   tile.className = "tile";
   tile.dataset.id = link.id;
@@ -377,6 +474,9 @@ function createTile(link) {
   anchor.href = link.url;
   anchor.target = "_blank";
   anchor.rel = "noopener noreferrer";
+  anchor.addEventListener("click", () => {
+    recordVisit(link.id);
+  });
 
   const title = document.createElement("div");
   title.className = "tile-title";
@@ -427,40 +527,44 @@ function createTile(link) {
     openEditDialog(link.id);
   });
 
-  dragHandle.addEventListener("dragstart", event => {
-    draggedId = link.id;
-    tile.classList.add("dragging");
-    event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.setData("text/plain", link.id);
-  });
-
-  dragHandle.addEventListener("dragend", () => {
-    draggedId = null;
-    tile.classList.remove("dragging");
-    document.querySelectorAll(".tile.drag-over").forEach(el => {
-      el.classList.remove("drag-over");
+  if (!isAutomatic) {
+    dragHandle.addEventListener("dragstart", event => {
+      draggedId = link.id;
+      tile.classList.add("dragging");
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", link.id);
     });
-  });
 
-  tile.addEventListener("dragover", event => {
-    event.preventDefault();
-    if (draggedId && draggedId !== link.id) {
-      tile.classList.add("drag-over");
-    }
-  });
+    dragHandle.addEventListener("dragend", () => {
+      draggedId = null;
+      tile.classList.remove("dragging");
+      document.querySelectorAll(".tile.drag-over").forEach(el => {
+        el.classList.remove("drag-over");
+      });
+    });
 
-  tile.addEventListener("dragleave", () => {
-    tile.classList.remove("drag-over");
-  });
+    tile.addEventListener("dragover", event => {
+      event.preventDefault();
+      if (draggedId && draggedId !== link.id) {
+        tile.classList.add("drag-over");
+      }
+    });
 
-  tile.addEventListener("drop", event => {
-    event.preventDefault();
-    tile.classList.remove("drag-over");
-    moveLink(draggedId, link.id, link.category);
-  });
+    tile.addEventListener("dragleave", () => {
+      tile.classList.remove("drag-over");
+    });
+
+    tile.addEventListener("drop", event => {
+      event.preventDefault();
+      tile.classList.remove("drag-over");
+      moveLink(draggedId, link.id, link.category);
+    });
+  }
 
   anchor.append(title, url);
-  actions.append(dragHandle);
+  if (!isAutomatic) {
+    actions.append(dragHandle);
+  }
   actions.append(changeCategoryBtn);
   actions.append(editBtn);
   actions.append(deleteBtn);
@@ -479,9 +583,78 @@ function renderCategorySuggestions() {
   });
 }
 
+function renderCategorySection(category, items, options = {}) {
+  const { isAutomatic = false } = options;
+  const section = document.createElement("section");
+  section.className = isAutomatic ? "category-section automatic-category-section" : "category-section";
+  section.dataset.category = category;
+
+  const header = document.createElement("div");
+  header.className = isAutomatic ? "category-header automatic-category-header" : "category-header";
+
+  const heading = document.createElement("h2");
+  heading.className = "category-title";
+  heading.textContent = category;
+
+  header.append(heading);
+
+  if (!isAutomatic) {
+    const deleteCategoryBtn = document.createElement("button");
+    deleteCategoryBtn.className = "delete-category-btn";
+    deleteCategoryBtn.type = "button";
+    deleteCategoryBtn.textContent = "🗑";
+    deleteCategoryBtn.setAttribute("aria-label", `Kategorie ${category} löschen`);
+    deleteCategoryBtn.setAttribute("data-tooltip", "Kategorie löschen");
+    deleteCategoryBtn.disabled = items.length > 0;
+    deleteCategoryBtn.addEventListener("click", event => {
+      event.preventDefault();
+      event.stopPropagation();
+      deleteEmptyCategory(category);
+    });
+
+    const categoryHeaderActions = document.createElement("div");
+    categoryHeaderActions.className = "category-header-actions";
+    categoryHeaderActions.append(deleteCategoryBtn);
+    header.append(categoryHeaderActions);
+  }
+
+  const grid = document.createElement("div");
+  grid.className = "tiles";
+  grid.dataset.category = category;
+
+  if (!isAutomatic) {
+    grid.addEventListener("dragover", event => {
+      event.preventDefault();
+    });
+
+    grid.addEventListener("drop", event => {
+      if (event.target.closest(".tile")) return;
+      event.preventDefault();
+      moveLinkToCategoryEnd(draggedId, category);
+    });
+  }
+
+  items.forEach(link => {
+    grid.append(createTile(link, { isAutomatic }));
+  });
+
+  if (!items.length) {
+    const emptyCategoryInfo = document.createElement("div");
+    emptyCategoryInfo.className = "empty-category";
+    emptyCategoryInfo.textContent = isAutomatic
+      ? "Noch keine aufgerufenen Kacheln."
+      : "Noch keine Kacheln in dieser Kategorie.";
+    grid.append(emptyCategoryInfo);
+  }
+
+  section.append(header, grid);
+  tilesContainer.append(section);
+}
+
 function render() {
   tilesContainer.innerHTML = "";
   syncCategoryOrder();
+  pruneVisitCounts();
 
   if (!links.length && !categoryOrder.length) {
     const empty = document.createElement("div");
@@ -501,65 +674,13 @@ function render() {
     groupedLinks.get(category).push(link);
   });
 
+  const mostVisitedLinks = getMostVisitedLinks();
+  if (mostVisitedLinks.length) {
+    renderCategorySection(MOST_VISITED_CATEGORY, mostVisitedLinks, { isAutomatic: true });
+  }
+
   categoryOrder.forEach(category => {
-    const items = groupedLinks.get(category) || [];
-
-    const section = document.createElement("section");
-    section.className = "category-section";
-    section.dataset.category = category;
-
-    const header = document.createElement("div");
-    header.className = "category-header";
-
-    const heading = document.createElement("h2");
-    heading.className = "category-title";
-    heading.textContent = category;
-
-    const deleteCategoryBtn = document.createElement("button");
-    deleteCategoryBtn.className = "delete-category-btn";
-    deleteCategoryBtn.type = "button";
-    deleteCategoryBtn.textContent = "🗑";
-    deleteCategoryBtn.setAttribute("aria-label", `Kategorie ${category} löschen`);
-    deleteCategoryBtn.setAttribute("data-tooltip", "Kategorie löschen");
-    deleteCategoryBtn.disabled = items.length > 0;
-    deleteCategoryBtn.addEventListener("click", event => {
-      event.preventDefault();
-      event.stopPropagation();
-      deleteEmptyCategory(category);
-    });
-
-    const grid = document.createElement("div");
-    grid.className = "tiles";
-    grid.dataset.category = category;
-
-    grid.addEventListener("dragover", event => {
-      event.preventDefault();
-    });
-
-    grid.addEventListener("drop", event => {
-      if (event.target.closest(".tile")) return;
-      event.preventDefault();
-      moveLinkToCategoryEnd(draggedId, category);
-    });
-
-    items.forEach(link => {
-      grid.append(createTile(link));
-    });
-
-    if (!items.length) {
-      const emptyCategoryInfo = document.createElement("div");
-      emptyCategoryInfo.className = "empty-category";
-      emptyCategoryInfo.textContent = "Noch keine Kacheln in dieser Kategorie.";
-      grid.append(emptyCategoryInfo);
-    }
-
-    const categoryHeaderActions = document.createElement("div");
-    categoryHeaderActions.className = "category-header-actions";
-    categoryHeaderActions.append(deleteCategoryBtn);
-
-    header.append(heading, categoryHeaderActions);
-    section.append(header, grid);
-    tilesContainer.append(section);
+    renderCategorySection(category, groupedLinks.get(category) || []);
   });
 
   renderCategorySuggestions();
@@ -567,6 +688,7 @@ function render() {
 
 let links = loadLinks();
 let categoryOrder = loadCategoryOrder();
+let visitCounts = loadVisitCounts();
 saveLinks(links);
 render();
 

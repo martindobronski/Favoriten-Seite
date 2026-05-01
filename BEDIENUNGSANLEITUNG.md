@@ -42,8 +42,11 @@ Unter dem Formular befinden sich:
 - `Kategorien sortieren`: öffnet einen Dialog, in dem die Kategorie-Reihenfolge geändert werden kann
 - `Export Favoriten`: lädt die gespeicherten Favoriten als JSON-Datei herunter
 - `Import Favoriten`: liest Favoriten aus einer JSON-Datei ein
+- `Hilfe`: öffnet diese Bedienungsanleitung als PDF in einem neuen Browser-Tab
 
-Darunter erscheinen die Kategorien. Jede Kategorie hat eine Überschrift und eine Lösch-Schaltfläche. Die Lösch-Schaltfläche ist nur nutzbar, wenn die Kategorie leer ist.
+Darunter erscheinen die Kategorien. Wenn bereits Favoriten geöffnet wurden, erscheint ganz oben automatisch die Kategorie `Am Häufigsten besucht...` mit den bis zu fünf am häufigsten aufgerufenen Kacheln. Danach folgen die selbst angelegten Kategorien. Jede selbst angelegte Kategorie hat eine Überschrift und eine Lösch-Schaltfläche. Die Lösch-Schaltfläche ist nur nutzbar, wenn die Kategorie leer ist.
+
+Am unteren Fensterrand wird eine feststehende Footer-Leiste mit Programmversion, Versionsdatum und Copyright-Vermerk angezeigt, zum Beispiel `Version 0.2 · 01.05.2026 · (c) MD. 2026`.
 
 ## Favoriten hinzufügen
 
@@ -74,6 +77,8 @@ Leere Kategorien sind nützlich, um die Struktur vorzubereiten, bevor Favoriten 
 ## Favoriten öffnen
 
 Ein Klick auf den Textbereich einer Kachel öffnet die gespeicherte URL in einem neuen Browser-Tab. Dabei wird `noopener noreferrer` verwendet, damit die geöffnete Seite keinen Zugriff auf das Ursprungsfenster erhält.
+
+Jeder Klick auf eine Kachel wird lokal gezählt. Aus diesen Zählern erstellt die Anwendung automatisch die Kategorie `Am Häufigsten besucht...`. Die Kacheln bleiben weiterhin in ihren eigentlichen Kategorien; der automatische Abschnitt ist nur eine zusätzliche Anzeige.
 
 ## Favoriten bearbeiten
 
@@ -126,7 +131,7 @@ So ändern Sie die Reihenfolge:
 
 Die neue Reihenfolge wird sofort im Browser gespeichert.
 
-Wichtig: Eine Kachel kann per Drag-and-drop nicht in eine andere Kategorie gezogen werden. Wenn eine Kachel auf eine andere Kategorie gezogen wird, stellt die Anwendung die ursprüngliche Position wieder her.
+Wichtig: Eine Kachel kann per Drag-and-drop nicht in eine andere Kategorie gezogen werden. Wenn eine Kachel auf eine andere Kategorie gezogen wird, stellt die Anwendung die ursprüngliche Position wieder her. Kacheln im automatischen Abschnitt `Am Häufigsten besucht...` können nicht manuell sortiert werden.
 
 ## Kategorien sortieren
 
@@ -136,7 +141,10 @@ So ändern Sie die Reihenfolge im Sortierdialog:
 
 1. Klicken Sie auf `Kategorien sortieren`.
 2. Verschieben Sie Kategorien per Drag-and-drop innerhalb der Liste oder nutzen Sie die Pfeil-Schaltflächen.
-3. Klicken Sie auf `Speichern`.
+3. Verwenden Sie die Doppelpfeile, um eine Kategorie direkt ganz nach oben oder ganz nach unten zu verschieben.
+4. Klicken Sie auf `Speichern`.
+
+Die Pfeil-Schaltflächen zeigen beim Überfahren mit der Maus einen Hinweis zur jeweiligen Aktion.
 
 Mit `Abbrechen` wird der Dialog geschlossen, ohne die geänderte Reihenfolge zu übernehmen. Die im Dialog gespeicherte Reihenfolge wird unabhängig von den Favoriten im Browser gespeichert.
 
@@ -206,6 +214,7 @@ Verwendete Schlüssel:
 
 - `favorite-links-v1`: Favoriten-Liste
 - `favorite-category-order-v1`: Reihenfolge der Kategorien
+- `favorite-visit-counts-v1`: lokale Besuchszähler für die automatische Top-5-Kategorie
 
 Die Daten bleiben erhalten, solange der Browser-Speicher für diese Seite nicht gelöscht wird. Sie werden nicht an einen Server übertragen.
 
@@ -279,6 +288,8 @@ Die wichtigsten Funktionen sind:
 - `normalizeCategory`: trimmt Kategorien und setzt bei leerem Wert `Allgemein`
 - `loadLinks` und `saveLinks`: laden und speichern Favoriten
 - `loadCategoryOrder` und `saveCategoryOrder`: laden und speichern die Kategorie-Reihenfolge
+- `loadVisitCounts` und `saveVisitCounts`: laden und speichern Besuchszähler
+- `recordVisit` und `getMostVisitedLinks`: zählen Link-Aufrufe und ermitteln die Top-5-Kacheln
 - `sanitizeImportedLinks`: prüft und bereinigt importierte JSON-Daten
 - `render`: baut Kategorien, Kacheln und Vorschlagsliste neu auf
 - `renderSortCategoriesList`: baut die Sortierliste im Kategorie-Dialog auf
