@@ -83,7 +83,7 @@ function syncCategoryOrder() {
   const existing = getExistingCategories();
   existing.forEach(category => {
     if (!categoryOrder.includes(category)) {
-      categoryOrder.push(category);
+      categoryOrder.unshift(category);
     }
   });
 
@@ -121,6 +121,10 @@ function moveLink(fromId, toId, targetCategory) {
   if (fromIndex === -1 || toIndex === -1) return;
 
   const [moved] = links.splice(fromIndex, 1);
+  if (normalizeCategory(moved.category) !== normalizeCategory(targetCategory)) {
+    links.splice(fromIndex, 0, moved);
+    return;
+  }
   moved.category = normalizeCategory(targetCategory || moved.category);
 
   const adjustedToIndex = fromIndex < toIndex ? toIndex - 1 : toIndex;
@@ -137,6 +141,10 @@ function moveLinkToCategoryEnd(fromId, targetCategory) {
   if (fromIndex === -1) return;
 
   const [moved] = links.splice(fromIndex, 1);
+  if (normalizeCategory(moved.category) !== normalizedCategory) {
+    links.splice(fromIndex, 0, moved);
+    return;
+  }
   moved.category = normalizedCategory;
   links.push(moved);
   saveLinks(links);
@@ -152,7 +160,7 @@ function reassignLinkCategory(linkId, nextCategory) {
   saveLinks(links);
 
   if (!categoryOrder.includes(normalizedCategory)) {
-    categoryOrder.push(normalizedCategory);
+    categoryOrder.unshift(normalizedCategory);
     saveCategoryOrder(categoryOrder);
   }
 
@@ -266,14 +274,12 @@ function createTile(link) {
   tile.className = "tile";
   tile.dataset.id = link.id;
 
-  const header = document.createElement("div");
-  header.className = "tile-header";
-
   const dragHandle = document.createElement("button");
   dragHandle.className = "drag-handle";
   dragHandle.type = "button";
-  dragHandle.textContent = "Verschieben";
-  dragHandle.setAttribute("aria-label", `Kachel ${link.title} verschieben`);
+  dragHandle.textContent = "↔️";
+  dragHandle.setAttribute("data-tooltip", "Reihenfolge ändern");
+  dragHandle.setAttribute("aria-label", `Reihenfolge von ${link.title} ändern`);
   dragHandle.draggable = true;
 
   const anchor = document.createElement("a");
@@ -310,7 +316,9 @@ function createTile(link) {
   const changeCategoryBtn = document.createElement("button");
   changeCategoryBtn.className = "change-category-btn";
   changeCategoryBtn.type = "button";
-  changeCategoryBtn.textContent = "Kategorie ändern";
+  changeCategoryBtn.textContent = "🏷️";
+  changeCategoryBtn.setAttribute("data-tooltip", "Kategorie ändern");
+  changeCategoryBtn.setAttribute("aria-label", `Kategorie von ${link.title} ändern`);
   changeCategoryBtn.addEventListener("click", event => {
     event.stopPropagation();
     event.preventDefault();
@@ -361,12 +369,12 @@ function createTile(link) {
     moveLink(draggedId, link.id, link.category);
   });
 
-  header.append(dragHandle);
   anchor.append(title, url);
-  actions.append(editBtn);
+  actions.append(dragHandle);
   actions.append(changeCategoryBtn);
+  actions.append(editBtn);
   actions.append(deleteBtn);
-  tile.append(header, anchor, actions);
+  tile.append(anchor, actions);
   return tile;
 }
 
@@ -539,7 +547,7 @@ linkForm.addEventListener("submit", event => {
 
   if (!title && !url) {
     if (!categoryOrder.includes(category)) {
-      categoryOrder.push(category);
+      categoryOrder.unshift(category);
       saveCategoryOrder(categoryOrder);
     }
     render();
@@ -563,7 +571,7 @@ linkForm.addEventListener("submit", event => {
   links.unshift({ id: crypto.randomUUID(), title, url, category });
   saveLinks(links);
   if (!categoryOrder.includes(category)) {
-    categoryOrder.push(category);
+    categoryOrder.unshift(category);
     saveCategoryOrder(categoryOrder);
   }
   render();
@@ -653,7 +661,7 @@ editForm.addEventListener("submit", event => {
   saveLinks(links);
 
   if (!categoryOrder.includes(normalizedCategory)) {
-    categoryOrder.push(normalizedCategory);
+    categoryOrder.unshift(normalizedCategory);
     saveCategoryOrder(categoryOrder);
   }
 

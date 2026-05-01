@@ -262,19 +262,51 @@ button:hover {
 }
 
 .drag-handle {
+  position: relative;
   border: 1px solid rgba(96, 112, 128, 0.35);
   border-radius: 8px;
   background: transparent;
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: 1rem;
   line-height: 1;
-  padding: 0.35rem 0.45rem;
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   cursor: grab;
   user-select: none;
 }
 
 .drag-handle:hover {
   background: rgba(96, 112, 128, 0.08);
+}
+
+.drag-handle::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 6px);
+  background: #0f172a;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.2;
+  padding: 0.3rem 0.45rem;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity 0.08s ease, transform 0.08s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.drag-handle:hover::after,
+.drag-handle:focus-visible::after {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .tile-title {
@@ -298,15 +330,48 @@ button:hover {
 }
 
 .change-category-btn {
+  position: relative;
   background: transparent;
   color: var(--muted);
   border: 1px solid rgba(96, 112, 128, 0.35);
-  padding: 0.35rem 0.55rem;
-  font-size: 0.8rem;
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1;
 }
 
 .change-category-btn:hover {
   background: rgba(96, 112, 128, 0.1);
+}
+
+.change-category-btn::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  background: #0f172a;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.2;
+  padding: 0.3rem 0.45rem;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, 2px);
+  transition: opacity 0.08s ease, transform 0.08s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.change-category-btn:hover::after,
+.change-category-btn:focus-visible::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 
 .edit-btn {
