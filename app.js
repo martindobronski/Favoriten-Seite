@@ -10,6 +10,11 @@ const tilesContainer = document.getElementById("tilesContainer");
 const exportBtn = document.getElementById("exportBtn");
 const importBtn = document.getElementById("importBtn");
 const importFileInput = document.getElementById("importFileInput");
+const sortCategoriesBtn = document.getElementById("sortCategoriesBtn");
+const sortCategoriesDialog = document.getElementById("sortCategoriesDialog");
+const sortCategoriesForm = document.getElementById("sortCategoriesForm");
+const sortCategoriesList = document.getElementById("sortCategoriesList");
+const sortCategoriesCancelBtn = document.getElementById("sortCategoriesCancelBtn");
 const editDialog = document.getElementById("editDialog");
 const editForm = document.getElementById("editForm");
 const editTitleInput = document.getElementById("editTitleInput");
@@ -22,9 +27,10 @@ const defaultLinks = [
   { id: crypto.randomUUID(), title: "Wikipedia", url: "https://de.wikipedia.org", category: "Wissen" }
 ];
 let draggedId = null;
-let draggedCategory = null;
+let draggedSortCategory = null;
 let activeCategoryMenu = null;
 let editingLinkId = null;
+let pendingCategoryOrder = [];
 
 function normalizeUrl(rawUrl) {
   const value = rawUrl.trim();
@@ -188,7 +194,9 @@ function openCategoryMenu(triggerElement, link) {
   closeCategoryMenu();
 
   const currentCategory = normalizeCategory(link.category);
-  const categories = categoryOrder.filter(category => category !== currentCategory);
+  const categories = categoryOrder
+    .filter(category => category !== currentCategory)
+    .sort((first, second) => first.localeCompare(second, "de", { sensitivity: "base" }));
   if (!categories.length) {
     alert("Es gibt noch keine andere Kategorie zur Auswahl.");
     return;
@@ -234,29 +242,6 @@ function openCategoryMenu(triggerElement, link) {
   activeCategoryMenu = menu;
 }
 
-function moveCategory(fromCategory, toCategory) {
-  if (!fromCategory || !toCategory || fromCategory === toCategory) return;
-
-  const fromIndex = categoryOrder.indexOf(fromCategory);
-  const toIndex = categoryOrder.indexOf(toCategory);
-  if (fromIndex === -1 || toIndex === -1) return;
-
-  const [moved] = categoryOrder.splice(fromIndex, 1);
-  categoryOrder.splice(toIndex, 0, moved);
-  saveCategoryOrder(categoryOrder);
-  render();
-}
-
-function moveCategoryToEnd(category) {
-  const index = categoryOrder.indexOf(category);
-  if (index === -1) return;
-
-  const [moved] = categoryOrder.splice(index, 1);
-  categoryOrder.push(moved);
-  saveCategoryOrder(categoryOrder);
-  render();
-}
-
 function deleteEmptyCategory(category) {
   const hasLinks = links.some(link => normalizeCategory(link.category) === category);
   if (hasLinks) {
@@ -267,6 +252,111 @@ function deleteEmptyCategory(category) {
   categoryOrder = categoryOrder.filter(item => item !== category);
   saveCategoryOrder(categoryOrder);
   render();
+}
+
+function movePendingCategory(fromIndex, toIndex) {
+  if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return;
+  if (fromIndex >= pendingCategoryOrder.length || toIndex >= pendingCategoryOrder.length) return;
+
+  const [moved] = pendingCategoryOrder.splice(fromIndex, 1);
+  pendingCategoryOrder.splice(toIndex, 0, moved);
+  renderSortCategoriesList();
+}
+
+function renderSortCategoriesList() {
+  sortCategoriesList.innerHTML = "";
+
+  if (!pendingCategoryOrder.length) {
+    const emptyInfo = document.createElement("div");
+    emptyInfo.className = "sort-empty";
+    emptyInfo.textContent = "Noch keine Kategorien vorhanden.";
+    sortCategoriesList.append(emptyInfo);
+    return;
+  }
+
+  pendingCategoryOrder.forEach((category, index) => {
+    const item = document.createElement("div");
+    item.className = "sort-category-item";
+    item.draggable = true;
+    item.dataset.index = String(index);
+
+    const handle = document.createElement("span");
+    handle.className = "sort-category-handle";
+    handle.textContent = "≡";
+    handle.setAttribute("aria-hidden", "true");
+
+    const label = document.createElement("span");
+    label.className = "sort-category-label";
+    label.textContent = category;
+
+    const moveUpBtn = document.createElement("button");
+    moveUpBtn.type = "button";
+    moveUpBtn.className = "sort-icon-btn";
+    moveUpBtn.textContent = "↑";
+    moveUpBtn.disabled = index === 0;
+    moveUpBtn.setAttribute("aria-label", `${category} nach oben verschieben`);
+    moveUpBtn.addEventListener("click", () => {
+      movePendingCategory(index, index - 1);
+    });
+
+    const moveDownBtn = document.createElement("button");
+    moveDownBtn.type = "button";
+    moveDownBtn.className = "sort-icon-btn";
+    moveDownBtn.textContent = "↓";
+    moveDownBtn.disabled = index === pendingCategoryOrder.length - 1;
+    moveDownBtn.setAttribute("aria-label", `${category} nach unten verschieben`);
+    moveDownBtn.addEventListener("click", () => {
+      movePendingCategory(index, index + 1);
+    });
+
+    item.addEventListener("dragstart", event => {
+      draggedSortCategory = category;
+      item.classList.add("sort-dragging");
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", category);
+    });
+
+    item.addEventListener("dragend", () => {
+      draggedSortCategory = null;
+      item.classList.remove("sort-dragging");
+      document.querySelectorAll(".sort-category-item.sort-drag-over").forEach(el => {
+        el.classList.remove("sort-drag-over");
+      });
+    });
+
+    item.addEventListener("dragover", event => {
+      if (!draggedSortCategory || draggedSortCategory === category) return;
+      event.preventDefault();
+      item.classList.add("sort-drag-over");
+    });
+
+    item.addEventListener("dragleave", () => {
+      item.classList.remove("sort-drag-over");
+    });
+
+    item.addEventListener("drop", event => {
+      event.preventDefault();
+      item.classList.remove("sort-drag-over");
+
+      const fromIndex = pendingCategoryOrder.indexOf(draggedSortCategory);
+      const toIndex = pendingCategoryOrder.indexOf(category);
+      movePendingCategory(fromIndex, toIndex);
+    });
+
+    const controls = document.createElement("div");
+    controls.className = "sort-category-controls";
+    controls.append(moveUpBtn, moveDownBtn);
+
+    item.append(handle, label, controls);
+    sortCategoriesList.append(item);
+  });
+}
+
+function openSortCategoriesDialog() {
+  syncCategoryOrder();
+  pendingCategoryOrder = [...categoryOrder];
+  renderSortCategoriesList();
+  sortCategoriesDialog.showModal();
 }
 
 function createTile(link) {
@@ -425,13 +515,6 @@ function render() {
     heading.className = "category-title";
     heading.textContent = category;
 
-    const categoryDragHandle = document.createElement("button");
-    categoryDragHandle.className = "category-drag-handle";
-    categoryDragHandle.type = "button";
-    categoryDragHandle.textContent = "Abschnitt verschieben";
-    categoryDragHandle.draggable = true;
-    categoryDragHandle.setAttribute("aria-label", `Kategorie ${category} verschieben`);
-
     const deleteCategoryBtn = document.createElement("button");
     deleteCategoryBtn.className = "delete-category-btn";
     deleteCategoryBtn.type = "button";
@@ -459,38 +542,6 @@ function render() {
       moveLinkToCategoryEnd(draggedId, category);
     });
 
-    categoryDragHandle.addEventListener("dragstart", event => {
-      draggedCategory = category;
-      section.classList.add("category-dragging");
-      event.dataTransfer.effectAllowed = "move";
-      event.dataTransfer.setData("text/plain", category);
-    });
-
-    categoryDragHandle.addEventListener("dragend", () => {
-      draggedCategory = null;
-      section.classList.remove("category-dragging");
-      document.querySelectorAll(".category-section.category-drag-over").forEach(el => {
-        el.classList.remove("category-drag-over");
-      });
-    });
-
-    section.addEventListener("dragover", event => {
-      if (!draggedCategory || draggedCategory === category) return;
-      event.preventDefault();
-      section.classList.add("category-drag-over");
-    });
-
-    section.addEventListener("dragleave", () => {
-      section.classList.remove("category-drag-over");
-    });
-
-    section.addEventListener("drop", event => {
-      if (!draggedCategory) return;
-      event.preventDefault();
-      section.classList.remove("category-drag-over");
-      moveCategory(draggedCategory, category);
-    });
-
     items.forEach(link => {
       grid.append(createTile(link));
     });
@@ -504,7 +555,7 @@ function render() {
 
     const categoryHeaderActions = document.createElement("div");
     categoryHeaderActions.className = "category-header-actions";
-    categoryHeaderActions.append(categoryDragHandle, deleteCategoryBtn);
+    categoryHeaderActions.append(deleteCategoryBtn);
 
     header.append(heading, categoryHeaderActions);
     section.append(header, grid);
@@ -523,18 +574,6 @@ document.addEventListener("click", event => {
   if (!activeCategoryMenu) return;
   if (event.target.closest(".category-menu") || event.target.closest(".change-category-btn")) return;
   closeCategoryMenu();
-});
-
-tilesContainer.addEventListener("dragover", event => {
-  if (!draggedCategory) return;
-  event.preventDefault();
-});
-
-tilesContainer.addEventListener("drop", event => {
-  if (!draggedCategory) return;
-  if (event.target.closest(".category-section")) return;
-  event.preventDefault();
-  moveCategoryToEnd(draggedCategory);
 });
 
 linkForm.addEventListener("submit", event => {
@@ -597,6 +636,24 @@ exportBtn.addEventListener("click", () => {
 
 importBtn.addEventListener("click", () => {
   importFileInput.click();
+});
+
+sortCategoriesBtn.addEventListener("click", () => {
+  openSortCategoriesDialog();
+});
+
+sortCategoriesForm.addEventListener("submit", event => {
+  event.preventDefault();
+  categoryOrder = [...pendingCategoryOrder];
+  saveCategoryOrder(categoryOrder);
+  pendingCategoryOrder = [];
+  render();
+  sortCategoriesDialog.close();
+});
+
+sortCategoriesCancelBtn.addEventListener("click", () => {
+  pendingCategoryOrder = [];
+  sortCategoriesDialog.close();
 });
 
 importFileInput.addEventListener("change", async event => {

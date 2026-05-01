@@ -20,8 +20,9 @@
         <button type="submit">Hinzufügen</button>
       </form>
       <div class="panel-actions">
-        <button id="exportBtn" type="button" class="secondary-btn">Export JSON</button>
-        <button id="importBtn" type="button" class="secondary-btn">Import JSON</button>
+        <button id="sortCategoriesBtn" type="button" class="secondary-btn">Kategorien sortieren</button>
+        <button id="exportBtn" type="button" class="secondary-btn">Export Favoriten</button>
+        <button id="importBtn" type="button" class="secondary-btn">Import Favoriten</button>
         <input id="importFileInput" type="file" accept="application/json,.json" hidden>
       </div>
     </section>
@@ -37,6 +38,17 @@
       <input id="editCategoryInput" type="text" list="categorySuggestions" placeholder="Kategorie" required>
       <div class="edit-actions">
         <button type="button" id="editCancelBtn" class="secondary-btn">Abbrechen</button>
+        <button type="submit">Speichern</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="sortCategoriesDialog" class="sort-categories-dialog">
+    <form id="sortCategoriesForm" class="sort-categories-form" method="dialog">
+      <h3>Kategorien sortieren</h3>
+      <div id="sortCategoriesList" class="sort-categories-list" aria-live="polite"></div>
+      <div class="sort-actions">
+        <button type="button" id="sortCategoriesCancelBtn" class="secondary-btn">Abbrechen</button>
         <button type="submit">Speichern</button>
       </div>
     </form>
