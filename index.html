@@ -12,17 +12,35 @@
     <p class="intro">Meine regelmäßig besuchten Seiten</p>
 
     <section class="panel">
-      <form id="linkForm">
-        <input id="titleInput" type="text" placeholder="Name (z. B. Nachrichten)" required>
-        <input id="urlInput" type="url" placeholder="URL (z. B. https://example.com)" required>
+      <form id="linkForm" novalidate>
+        <input id="titleInput" type="text" placeholder="Name (z. B. Nachrichten)">
+        <input id="urlInput" type="url" placeholder="URL (z. B. https://example.com)">
         <input id="categoryInput" type="text" list="categorySuggestions" placeholder="Kategorie (z. B. Wissen)" required>
         <datalist id="categorySuggestions"></datalist>
         <button type="submit">Hinzufügen</button>
       </form>
+      <div class="panel-actions">
+        <button id="exportBtn" type="button" class="secondary-btn">Export JSON</button>
+        <button id="importBtn" type="button" class="secondary-btn">Import JSON</button>
+        <input id="importFileInput" type="file" accept="application/json,.json" hidden>
+      </div>
     </section>
 
     <section id="tilesContainer" aria-live="polite"></section>
   </main>
+
+  <dialog id="editDialog" class="edit-dialog">
+    <form id="editForm" class="edit-form" method="dialog">
+      <h3>Kachel bearbeiten</h3>
+      <input id="editTitleInput" type="text" placeholder="Titel" required>
+      <input id="editUrlInput" type="url" placeholder="URL" required>
+      <input id="editCategoryInput" type="text" list="categorySuggestions" placeholder="Kategorie" required>
+      <div class="edit-actions">
+        <button type="button" id="editCancelBtn" class="secondary-btn">Abbrechen</button>
+        <button type="submit">Speichern</button>
+      </div>
+    </form>
+  </dialog>
 
   <script src="./app.js"></script>
 </body>
