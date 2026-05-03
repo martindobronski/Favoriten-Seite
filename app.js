@@ -37,13 +37,10 @@ let activeCategoryMenu = null;
 let editingLinkId = null;
 let pendingCategoryOrder = [];
 let searchQuery = "";
+let hasChanges = false; // NEU: Trackt Änderungen für den Auto-Export
 
-// ── SICHERE SPEICHERFUNKTION (NEU) ────────────────────────────────────────────
+// ── SICHERE SPEICHERFUNKTION ──────────────────────────────────────────────────
 
-/**
- * Versucht, Daten im localStorage zu speichern.
- * Fängt QuotaExceededError ab, bereinigt alte Daten und warnt den Nutzer.
- */
 function safeLocalStorageSetItem(key, value) {
   try {
     localStorage.setItem(key, value);
@@ -52,8 +49,6 @@ function safeLocalStorageSetItem(key, value) {
     if (e.name === 'QuotaExceededError' || e.code === 22) {
       console.warn('localStorage ist voll. Versuche automatische Bereinigung...');
 
-      // Versuch 1: Visit Counts bereinigen (alte Einträge von gelöschten Links entfernen)
-      // Wir rufen pruneVisitCounts auf, aber müssen sicherstellen, dass es die globalen Variablen nutzt
       const linkIds = new Set(links.map(link => link.id));
       let didChange = false;
       Object.keys(visitCounts).forEach(id => {
@@ -67,15 +62,13 @@ function safeLocalStorageSetItem(key, value) {
         try {
           localStorage.setItem(VISIT_COUNTS_KEY, JSON.stringify(visitCounts));
           alert('Speicher war voll. Alte Zählerdaten wurden automatisch bereinigt, um Platz zu schaffen.');
-          // Jetzt den ursprünglichen Speicherversuch wiederholen
           localStorage.setItem(key, value);
           return true;
         } catch (e2) {
-          // Immer noch voll trotz Bereinigung
+          // Immer noch voll
         }
       }
 
-      // Versuch 2: Nutzer warnen
       alert(
         'KRITISCH: Der lokale Speicher Ihres Browsers ist voll!\n\n' +
         'Neue Änderungen können NICHT gespeichert werden.\n\n' +
@@ -86,7 +79,6 @@ function safeLocalStorageSetItem(key, value) {
       );
       return false;
     }
-    // Andere Fehler weiterwerfen
     throw e;
   }
 }
@@ -96,7 +88,17 @@ function safeLocalStorageSetItem(key, value) {
 function normalizeUrl(rawUrl) {
   const value = rawUrl.trim();
   if (!value) return "";
-  if (/^[a-zA-Z][a-zA-Z0-9+\-.]*:\/\//.test(value)) return value;
+
+  // Prüfen, ob bereits ein Schema vorhanden ist.
+  // Wir erlauben jetzt explizit Buchstaben, Zahlen, +, -, . UND das @-Zeichen im Schema-Kontext,
+  // aber wichtiger: Wir prüfen nur auf das Schema am Anfang.
+  // Wenn ein Schema da ist, geben wir die URL unverändert zurück.
+  if (/^[a-zA-Z][a-zA-Z0-9+\-.]*:\/\//.test(value)) {
+    return value;
+  }
+
+  // Wenn kein Schema da ist, fügen wir https:// hinzu.
+  // Das @-Zeichen bleibt dabei erhalten, da es Teil des Strings ist.
   return "https://" + value;
 }
 
@@ -133,6 +135,7 @@ function saveLinks(links) {
 function setLinks(newLinks) {
   links = newLinks;
   saveLinks(links);
+  hasChanges = true; // NEU: Änderung markieren
 }
 
 // ── STORAGE: CATEGORY ORDER ──────────────────────────────────────────────────
@@ -152,6 +155,7 @@ function loadCategoryOrder() {
 function saveCategoryOrder(order) {
   const jsonData = JSON.stringify(order);
   safeLocalStorageSetItem(CATEGORY_ORDER_KEY, jsonData);
+  hasChanges = true; // NEU: Änderung markieren
 }
 
 // ── STORAGE: VISIT COUNTS ────────────────────────────────────────────────────
@@ -198,6 +202,7 @@ function recordVisit(linkId) {
   if (!linkId) return;
   visitCounts[linkId] = (visitCounts[linkId] || 0) + 1;
   saveVisitCounts(visitCounts);
+  // hasChanges = true; // Optional: Hier deaktiviert, um den Nutzer beim reinen Surfen nicht zu nerven
   setTimeout(update, 0);
 }
 
@@ -884,6 +889,8 @@ linkForm.addEventListener("submit", event => {
 
   links.unshift({ id: crypto.randomUUID(), title, url, category });
   saveLinks(links);
+  hasChanges = true; // NEU: Änderung markieren
+
   if (!categoryOrder.includes(category)) {
     categoryOrder.unshift(category);
     saveCategoryOrder(categoryOrder);
@@ -908,6 +915,8 @@ exportBtn.addEventListener("click", () => {
   anchor.click();
 
   URL.revokeObjectURL(url);
+  // Nach manuellem Export können wir das Flag zurücksetzen, da gesichert
+  hasChanges = false;
 });
 
 importBtn.addEventListener("click", () => {
@@ -955,18 +964,18 @@ importFileInput.addEventListener("change", async event => {
     );
 
     if (shouldReplace) {
-      setLinks(importedLinks);
+      setLinks(importedLinks); // setLinks setzt bereits hasChanges = true
       if (importedCategoryOrder.length) {
         categoryOrder = importedCategoryOrder;
-        saveCategoryOrder(categoryOrder);
+        saveCategoryOrder(categoryOrder); // saveCategoryOrder setzt bereits hasChanges = true
       }
     } else {
-      setLinks([...importedLinks, ...links]);
+      setLinks([...importedLinks, ...links]); // setLinks setzt bereits hasChanges = true
       if (importedCategoryOrder.length) {
         const newCategories = importedCategoryOrder.filter(c => !categoryOrder.includes(c));
         if (newCategories.length) {
           categoryOrder = [...newCategories, ...categoryOrder];
-          saveCategoryOrder(categoryOrder);
+          saveCategoryOrder(categoryOrder); // saveCategoryOrder setzt bereits hasChanges = true
         }
       }
     }
@@ -1006,6 +1015,7 @@ editForm.addEventListener("submit", event => {
   link.url = normalizedUrl;
   link.category = normalizedCategory;
   saveLinks(links);
+  hasChanges = true; // NEU: Änderung markieren
 
   if (!categoryOrder.includes(normalizedCategory)) {
     categoryOrder.unshift(normalizedCategory);
@@ -1020,5 +1030,47 @@ editForm.addEventListener("submit", event => {
 editCancelBtn.addEventListener("click", () => {
   editDialog.close();
   editingLinkId = null;
+});
+
+// ── AUTO-EXPORT BEIM VERLASSEN (NEU) ─────────────────────────────────────────
+
+window.addEventListener('beforeunload', (event) => {
+  if (!hasChanges) {
+    // Keine Änderungen, alles sauber verlassen
+    return;
+  }
+
+  // 1. Versuch: Automatischen Export auslösen
+  try {
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      categoryOrder,
+      links
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `favoriten-backup-${new Date().toISOString().slice(0,10)}.json`;
+
+    // Simulierter Klick
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+
+    // URL freigeben (kann aber abgebrochen werden, wenn Tab sofort schließt)
+    setTimeout(() => URL.revokeObjectURL(url), 100);
+  } catch (e) {
+    console.error("Auto-Export fehlgeschlagen:", e);
+  }
+
+  // 2. Sicherheitsnetz: Browser-Warnung anzeigen
+  // Dies zwingt den Browser, den Schließ-Vorgang kurz zu pausieren.
+  event.preventDefault();
+  event.returnValue = 'Es wurden Änderungen vorgenommen. Ein automatischer Backup-Export wurde versucht. Bitte überprüfen Sie Ihren Download-Ordner.';
+
+  // Rückgabe für ältere Browser
+  return 'Es wurden Änderungen vorgenommen. Ein automatischer Backup-Export wurde versucht.';
 });
 
