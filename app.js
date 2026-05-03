@@ -1,7 +1,6 @@
 const STORAGE_KEY = "favorite-links-v1";
 const CATEGORY_ORDER_KEY = "favorite-category-order-v1";
 const VISIT_COUNTS_KEY = "favorite-visit-counts-v1";
-// Consistent category name (was "Die 5 am häufigsten besuchten Seiten..." before)
 const MOST_VISITED_CATEGORY = "Am häufigsten besucht";
 const MOST_VISITED_LIMIT = 5;
 
@@ -37,15 +36,67 @@ let draggedSortCategory = null;
 let activeCategoryMenu = null;
 let editingLinkId = null;
 let pendingCategoryOrder = [];
-// Search state: lowercase query string
 let searchQuery = "";
 
-// ── URL / category helpers ───────────────────────────────────────────────────
+// ── SICHERE SPEICHERFUNKTION (NEU) ────────────────────────────────────────────
+
+/**
+ * Versucht, Daten im localStorage zu speichern.
+ * Fängt QuotaExceededError ab, bereinigt alte Daten und warnt den Nutzer.
+ */
+function safeLocalStorageSetItem(key, value) {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (e) {
+    if (e.name === 'QuotaExceededError' || e.code === 22) {
+      console.warn('localStorage ist voll. Versuche automatische Bereinigung...');
+
+      // Versuch 1: Visit Counts bereinigen (alte Einträge von gelöschten Links entfernen)
+      // Wir rufen pruneVisitCounts auf, aber müssen sicherstellen, dass es die globalen Variablen nutzt
+      const linkIds = new Set(links.map(link => link.id));
+      let didChange = false;
+      Object.keys(visitCounts).forEach(id => {
+        if (!linkIds.has(id)) {
+          delete visitCounts[id];
+          didChange = true;
+        }
+      });
+
+      if (didChange) {
+        try {
+          localStorage.setItem(VISIT_COUNTS_KEY, JSON.stringify(visitCounts));
+          alert('Speicher war voll. Alte Zählerdaten wurden automatisch bereinigt, um Platz zu schaffen.');
+          // Jetzt den ursprünglichen Speicherversuch wiederholen
+          localStorage.setItem(key, value);
+          return true;
+        } catch (e2) {
+          // Immer noch voll trotz Bereinigung
+        }
+      }
+
+      // Versuch 2: Nutzer warnen
+      alert(
+        'KRITISCH: Der lokale Speicher Ihres Browsers ist voll!\n\n' +
+        'Neue Änderungen können NICHT gespeichert werden.\n\n' +
+        'Bitte:\n' +
+        '1. Exportieren Sie Ihre Daten SOFORT über den "Export"-Button.\n' +
+        '2. Löschen Sie alte Links.\n' +
+        '3. Leeren Sie ggf. den Browser-Cache.'
+      );
+      return false;
+    }
+    // Andere Fehler weiterwerfen
+    throw e;
+  }
+}
+
+// ── URL / CATEGORY HELPERS ───────────────────────────────────────────────────
 
 function normalizeUrl(rawUrl) {
   const value = rawUrl.trim();
   if (!value) return "";
-  if (value.startsWith("http://") || value.startsWith("https://")) return value;
+  if (/^[a-zA-Z][a-zA-Z0-9+\-.]*:\/\//.test(value)) return value;
   return "https://" + value;
 }
 
@@ -54,7 +105,7 @@ function normalizeCategory(rawCategory) {
   return value || "Allgemein";
 }
 
-// ── Storage: links ───────────────────────────────────────────────────────────
+// ── STORAGE: LINKS ───────────────────────────────────────────────────────────
 
 function loadLinks() {
   try {
@@ -74,19 +125,17 @@ function loadLinks() {
 }
 
 function saveLinks(links) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
+  const jsonData = JSON.stringify(links);
+  const success = safeLocalStorageSetItem(STORAGE_KEY, jsonData);
+  if (!success) console.error('Speichern von Links fehlgeschlagen.');
 }
 
-/**
- * Replaces the global links array and immediately persists it.
- * Use this instead of direct assignment + saveLinks() for full replacements.
- */
 function setLinks(newLinks) {
   links = newLinks;
   saveLinks(links);
 }
 
-// ── Storage: category order ──────────────────────────────────────────────────
+// ── STORAGE: CATEGORY ORDER ──────────────────────────────────────────────────
 
 function loadCategoryOrder() {
   try {
@@ -101,10 +150,11 @@ function loadCategoryOrder() {
 }
 
 function saveCategoryOrder(order) {
-  localStorage.setItem(CATEGORY_ORDER_KEY, JSON.stringify(order));
+  const jsonData = JSON.stringify(order);
+  safeLocalStorageSetItem(CATEGORY_ORDER_KEY, jsonData);
 }
 
-// ── Storage: visit counts ────────────────────────────────────────────────────
+// ── STORAGE: VISIT COUNTS ────────────────────────────────────────────────────
 
 function loadVisitCounts() {
   try {
@@ -112,7 +162,6 @@ function loadVisitCounts() {
     if (!fromStorage) return {};
     const parsed = JSON.parse(fromStorage);
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
-
     return Object.fromEntries(
       Object.entries(parsed).filter(([id, count]) => (
         typeof id === "string" && id.trim() && Number.isInteger(count) && count > 0
@@ -124,7 +173,9 @@ function loadVisitCounts() {
 }
 
 function saveVisitCounts(counts) {
-  localStorage.setItem(VISIT_COUNTS_KEY, JSON.stringify(counts));
+  const jsonData = JSON.stringify(counts);
+  const success = safeLocalStorageSetItem(VISIT_COUNTS_KEY, jsonData);
+  if (!success) console.error('Speichern von Besuchszählern fehlgeschlagen.');
 }
 
 function pruneVisitCounts() {
@@ -147,11 +198,10 @@ function recordVisit(linkId) {
   if (!linkId) return;
   visitCounts[linkId] = (visitCounts[linkId] || 0) + 1;
   saveVisitCounts(visitCounts);
-  // re-render without full data sync (visit counts already saved)
   setTimeout(update, 0);
 }
 
-// ── Most-visited helpers ─────────────────────────────────────────────────────
+// ── MOST-VISITED HELPERS ─────────────────────────────────────────────────────
 
 function getMostVisitedLinks() {
   return links
@@ -164,7 +214,7 @@ function getMostVisitedLinks() {
     .slice(0, MOST_VISITED_LIMIT);
 }
 
-// ── Category order helpers ───────────────────────────────────────────────────
+// ── CATEGORY ORDER HELPERS ───────────────────────────────────────────────────
 
 function getExistingCategories() {
   return [...new Set(links
@@ -173,10 +223,6 @@ function getExistingCategories() {
   )];
 }
 
-/**
- * Ensures every category that exists in links is present in categoryOrder.
- * Called by update() before render() so render() stays side-effect-free.
- */
 function syncCategoryOrder() {
   const existing = getExistingCategories();
   categoryOrder = categoryOrder.filter(category => category !== MOST_VISITED_CATEGORY);
@@ -190,7 +236,7 @@ function syncCategoryOrder() {
   saveCategoryOrder(categoryOrder);
 }
 
-// ── Import sanitisation ──────────────────────────────────────────────────────
+// ── IMPORT SANITISATION ──────────────────────────────────────────────────────
 
 function sanitizeImportedLinks(rawLinks) {
   if (!Array.isArray(rawLinks)) return [];
@@ -215,7 +261,7 @@ function sanitizeImportedLinks(rawLinks) {
     .filter(link => link && link.title);
 }
 
-// ── Drag-and-drop: tile reordering ───────────────────────────────────────────
+// ── DRAG-AND-DROP: TILE REORDERING ───────────────────────────────────────────
 
 function moveLink(fromId, toId, targetCategory) {
   if (!fromId || !toId || fromId === toId) return;
@@ -271,7 +317,7 @@ function reassignLinkCategory(linkId, nextCategory) {
   update();
 }
 
-// ── Edit dialog ──────────────────────────────────────────────────────────────
+// ── EDIT DIALOG ──────────────────────────────────────────────────────────────
 
 function openEditDialog(linkId) {
   const link = links.find(item => item.id === linkId);
@@ -284,7 +330,7 @@ function openEditDialog(linkId) {
   editDialog.showModal();
 }
 
-// ── Category context menu ────────────────────────────────────────────────────
+// ── CATEGORY CONTEXT MENU ────────────────────────────────────────────────────
 
 function closeCategoryMenu() {
   if (!activeCategoryMenu) return;
@@ -299,6 +345,7 @@ function openCategoryMenu(triggerElement, link) {
   const categories = categoryOrder
     .filter(category => category !== currentCategory)
     .sort((first, second) => first.localeCompare(second, "de", { sensitivity: "base" }));
+
   if (!categories.length) {
     alert("Es gibt noch keine andere Kategorie zur Auswahl.");
     return;
@@ -344,7 +391,7 @@ function openCategoryMenu(triggerElement, link) {
   activeCategoryMenu = menu;
 }
 
-// ── Category deletion ────────────────────────────────────────────────────────
+// ── CATEGORY DELETION ────────────────────────────────────────────────────────
 
 function deleteEmptyCategory(category) {
   const hasLinks = links.some(link => normalizeCategory(link.category) === category);
@@ -358,7 +405,7 @@ function deleteEmptyCategory(category) {
   update();
 }
 
-// ── Sort-categories dialog ───────────────────────────────────────────────────
+// ── SORT-CATEGORIES DIALOG ───────────────────────────────────────────────────
 
 function movePendingCategory(fromIndex, toIndex) {
   if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return;
@@ -409,44 +456,32 @@ function renderSortCategoriesList() {
     moveTopBtn.className = "sort-icon-btn";
     moveTopBtn.textContent = "⇧";
     moveTopBtn.disabled = index === 0;
-    moveTopBtn.setAttribute("data-tooltip", "Ganz nach oben");
-    moveTopBtn.setAttribute("aria-label", `${category} ganz nach oben verschieben`);
-    moveTopBtn.addEventListener("click", () => {
-      movePendingCategoryToStart(index);
-    });
+    moveTopBtn.title = "Ganz nach oben";
+    moveTopBtn.addEventListener("click", () => movePendingCategoryToStart(index));
 
     const moveUpBtn = document.createElement("button");
     moveUpBtn.type = "button";
     moveUpBtn.className = "sort-icon-btn";
     moveUpBtn.textContent = "↑";
     moveUpBtn.disabled = index === 0;
-    moveUpBtn.setAttribute("data-tooltip", "Eine Position nach oben");
-    moveUpBtn.setAttribute("aria-label", `${category} nach oben verschieben`);
-    moveUpBtn.addEventListener("click", () => {
-      movePendingCategory(index, index - 1);
-    });
+    moveUpBtn.title = "Eine Position nach oben";
+    moveUpBtn.addEventListener("click", () => movePendingCategory(index, index - 1));
 
     const moveDownBtn = document.createElement("button");
     moveDownBtn.type = "button";
     moveDownBtn.className = "sort-icon-btn";
     moveDownBtn.textContent = "↓";
     moveDownBtn.disabled = index === pendingCategoryOrder.length - 1;
-    moveDownBtn.setAttribute("data-tooltip", "Eine Position nach unten");
-    moveDownBtn.setAttribute("aria-label", `${category} nach unten verschieben`);
-    moveDownBtn.addEventListener("click", () => {
-      movePendingCategory(index, index + 1);
-    });
+    moveDownBtn.title = "Eine Position nach unten";
+    moveDownBtn.addEventListener("click", () => movePendingCategory(index, index + 1));
 
     const moveBottomBtn = document.createElement("button");
     moveBottomBtn.type = "button";
     moveBottomBtn.className = "sort-icon-btn";
     moveBottomBtn.textContent = "⇩";
     moveBottomBtn.disabled = index === pendingCategoryOrder.length - 1;
-    moveBottomBtn.setAttribute("data-tooltip", "Ganz nach unten");
-    moveBottomBtn.setAttribute("aria-label", `${category} ganz nach unten verschieben`);
-    moveBottomBtn.addEventListener("click", () => {
-      movePendingCategoryToEnd(index);
-    });
+    moveBottomBtn.title = "Ganz nach unten";
+    moveBottomBtn.addEventListener("click", () => movePendingCategoryToEnd(index));
 
     item.addEventListener("dragstart", event => {
       draggedSortCategory = category;
@@ -476,7 +511,6 @@ function renderSortCategoriesList() {
     item.addEventListener("drop", event => {
       event.preventDefault();
       item.classList.remove("sort-drag-over");
-
       const fromIndex = pendingCategoryOrder.indexOf(draggedSortCategory);
       const toIndex = pendingCategoryOrder.indexOf(category);
       movePendingCategory(fromIndex, toIndex);
@@ -498,7 +532,7 @@ function openSortCategoriesDialog() {
   sortCategoriesDialog.showModal();
 }
 
-// ── Tile factory ─────────────────────────────────────────────────────────────
+// ── TILE FACTORY ─────────────────────────────────────────────────────────────
 
 function createTile(link, options = {}) {
   const { isAutomatic = false } = options;
@@ -506,77 +540,78 @@ function createTile(link, options = {}) {
   tile.className = "tile";
   tile.dataset.id = link.id;
 
-  // ── Favicon ────────────────────────────────────────────────────────────────
   const favicon = document.createElement("img");
   favicon.className = "tile-favicon";
   favicon.alt = "";
   favicon.setAttribute("aria-hidden", "true");
-  try {
-    const domain = new URL(link.url).hostname;
-    favicon.src = `https://www.google.com/s2/favicons?sz=32&domain=${domain}`;
-  } catch {
+  if (/^https?:\/\//i.test(link.url)) {
+    try {
+      const domain = new URL(link.url).hostname;
+      favicon.src = `https://www.google.com/s2/favicons?sz=32&domain=${domain}`;
+    } catch {
+      favicon.style.display = "none";
+    }
+    favicon.addEventListener("error", () => { favicon.style.display = "none"; });
+  } else {
     favicon.style.display = "none";
   }
-  favicon.addEventListener("error", () => { favicon.style.display = "none"; });
 
-  // ── Drag handle (only for manually sorted tiles) ───────────────────────────
   const dragHandle = document.createElement("button");
   dragHandle.className = "drag-handle";
   dragHandle.type = "button";
   dragHandle.textContent = "↔️";
-  dragHandle.setAttribute("data-tooltip", "Reihenfolge ändern");
-  dragHandle.setAttribute("aria-label", `Reihenfolge von ${link.title} ändern`);
+  dragHandle.title = "Reihenfolge ändern";
   dragHandle.draggable = true;
 
-  // ── Anchor (opens link) ────────────────────────────────────────────────────
+  const isCustomScheme = !/^https?:\/\//i.test(link.url);
   const anchor = document.createElement("a");
   anchor.className = "tile-link";
   anchor.href = link.url;
-  anchor.target = "_blank";
   anchor.rel = "noopener noreferrer";
-  anchor.addEventListener("click", () => {
-    recordVisit(link.id);
-  });
 
-  // Title row: favicon + title text
+  if (isCustomScheme) {
+    anchor.addEventListener("click", (event) => {
+      event.preventDefault();
+      recordVisit(link.id);
+      window.location.href = link.url;
+    });
+  } else {
+    anchor.target = "_blank";
+    anchor.addEventListener("click", () => {
+      recordVisit(link.id);
+    });
+  }
+
   const titleRow = document.createElement("div");
   titleRow.className = "tile-title-row";
-
   const title = document.createElement("div");
   title.className = "tile-title";
   title.textContent = link.title;
-
   titleRow.append(favicon, title);
 
   const url = document.createElement("div");
   url.className = "tile-url";
   url.textContent = link.url;
 
-  // ── Actions row ────────────────────────────────────────────────────────────
   const actions = document.createElement("div");
   actions.className = "tile-actions";
 
-  // Left spacer – optionally contains visit-count badge
   const actionsLeft = document.createElement("span");
   actionsLeft.className = "tile-actions-spacer";
-
   const visitCount = visitCounts[link.id] || 0;
   if (visitCount > 0) {
     const badge = document.createElement("span");
     badge.className = "visit-badge";
     badge.textContent = visitCount > 999 ? "999+" : String(visitCount);
     badge.title = `${visitCount} Mal besucht`;
-    badge.setAttribute("aria-label", `${visitCount} Mal besucht`);
     actionsLeft.append(badge);
   }
 
-  // Delete button – with confirmation
   const deleteBtn = document.createElement("button");
   deleteBtn.className = "delete-btn";
   deleteBtn.type = "button";
   deleteBtn.textContent = "🗑";
-  deleteBtn.setAttribute("aria-label", `Link ${link.title} entfernen`);
-  deleteBtn.setAttribute("data-tooltip", "Kachel löschen");
+  deleteBtn.title = "Löschen";
   deleteBtn.addEventListener("click", event => {
     event.stopPropagation();
     event.preventDefault();
@@ -589,8 +624,7 @@ function createTile(link, options = {}) {
   changeCategoryBtn.className = "change-category-btn";
   changeCategoryBtn.type = "button";
   changeCategoryBtn.textContent = "🏷️";
-  changeCategoryBtn.setAttribute("data-tooltip", "Kategorie ändern");
-  changeCategoryBtn.setAttribute("aria-label", `Kategorie von ${link.title} ändern`);
+  changeCategoryBtn.title = "Kategorie ändern";
   changeCategoryBtn.addEventListener("click", event => {
     event.stopPropagation();
     event.preventDefault();
@@ -601,15 +635,13 @@ function createTile(link, options = {}) {
   editBtn.className = "edit-btn";
   editBtn.type = "button";
   editBtn.textContent = "✏️";
-  editBtn.setAttribute("aria-label", `Link ${link.title} bearbeiten`);
-  editBtn.setAttribute("data-tooltip", "Kachel bearbeiten");
+  editBtn.title = "Bearbeiten";
   editBtn.addEventListener("click", event => {
     event.stopPropagation();
     event.preventDefault();
     openEditDialog(link.id);
   });
 
-  // Drag-and-drop wiring (only for non-automatic tiles)
   if (!isAutomatic) {
     dragHandle.addEventListener("dragstart", event => {
       draggedId = link.id;
@@ -654,12 +686,11 @@ function createTile(link, options = {}) {
   return tile;
 }
 
-// ── Category-suggestions datalist ────────────────────────────────────────────
+// ── CATEGORY-SUGGESTIONS DATALIST ────────────────────────────────────────────
 
 function renderCategorySuggestions() {
   const categories = [...new Set(links.map(link => normalizeCategory(link.category)))];
   categorySuggestions.innerHTML = "";
-
   categories.forEach(category => {
     const option = document.createElement("option");
     option.value = category;
@@ -667,7 +698,7 @@ function renderCategorySuggestions() {
   });
 }
 
-// ── Category section builder ──────────────────────────────────────────────────
+// ── CATEGORY SECTION BUILDER ──────────────────────────────────────────────────
 
 function renderCategorySection(category, items, options = {}) {
   const { isAutomatic = false } = options;
@@ -681,7 +712,6 @@ function renderCategorySection(category, items, options = {}) {
   const heading = document.createElement("h2");
   heading.className = "category-title";
   heading.textContent = category;
-
   header.append(heading);
 
   if (!isAutomatic) {
@@ -689,8 +719,7 @@ function renderCategorySection(category, items, options = {}) {
     deleteCategoryBtn.className = "delete-category-btn";
     deleteCategoryBtn.type = "button";
     deleteCategoryBtn.textContent = "🗑";
-    deleteCategoryBtn.setAttribute("aria-label", `Kategorie ${category} löschen`);
-    deleteCategoryBtn.setAttribute("data-tooltip", "Kategorie löschen");
+    deleteCategoryBtn.title = "Kategorie löschen";
     deleteCategoryBtn.disabled = items.length > 0;
     deleteCategoryBtn.addEventListener("click", event => {
       event.preventDefault();
@@ -709,10 +738,7 @@ function renderCategorySection(category, items, options = {}) {
   grid.dataset.category = category;
 
   if (!isAutomatic) {
-    grid.addEventListener("dragover", event => {
-      event.preventDefault();
-    });
-
+    grid.addEventListener("dragover", event => { event.preventDefault(); });
     grid.addEventListener("drop", event => {
       if (event.target.closest(".tile")) return;
       event.preventDefault();
@@ -737,19 +763,13 @@ function renderCategorySection(category, items, options = {}) {
   tilesContainer.append(section);
 }
 
-// ── State update ──────────────────────────────────────────────────────────────
-//
-// update() is the single entry-point for any state change.
-// It syncs derived state (category order, visit counts) BEFORE handing off
-// to render(), which is kept side-effect-free and only reads state.
+// ── STATE UPDATE & RENDER ────────────────────────────────────────────────────
 
 function update() {
   syncCategoryOrder();
   pruneVisitCounts();
   render();
 }
-
-// ── Render (read-only, no side effects) ───────────────────────────────────────
 
 function render() {
   tilesContainer.innerHTML = "";
@@ -763,7 +783,6 @@ function render() {
     return;
   }
 
-  // Apply search filter to links for display only; underlying data is unchanged
   const q = searchQuery;
   const displayLinks = q
     ? links.filter(link =>
@@ -773,7 +792,6 @@ function render() {
       )
     : links;
 
-  // Build category → tiles map from filtered links
   const groupedLinks = new Map();
   displayLinks.forEach(link => {
     const category = normalizeCategory(link.category);
@@ -781,7 +799,6 @@ function render() {
     groupedLinks.get(category).push(link);
   });
 
-  // Most-visited section (based on full link list, then filtered by query)
   const mostVisitedLinks = getMostVisitedLinks();
   const displayMostVisited = q
     ? mostVisitedLinks.filter(link =>
@@ -795,17 +812,14 @@ function render() {
     renderCategorySection(MOST_VISITED_CATEGORY, displayMostVisited, { isAutomatic: true });
   }
 
-  // User-defined categories
   let anyVisible = displayMostVisited.length > 0;
   categoryOrder.forEach(category => {
     const items = groupedLinks.get(category) || [];
-    // When searching, skip categories that have no matching tiles
     if (q && !items.length) return;
     anyVisible = true;
     renderCategorySection(category, items);
   });
 
-  // No search results
   if (q && !anyVisible) {
     const noResults = document.createElement("div");
     noResults.className = "empty";
@@ -816,7 +830,7 @@ function render() {
   renderCategorySuggestions();
 }
 
-// ── Initialisation ────────────────────────────────────────────────────────────
+// ── INITIALISIERUNG ──────────────────────────────────────────────────────────
 
 let links = loadLinks();
 let categoryOrder = loadCategoryOrder();
@@ -824,22 +838,19 @@ let visitCounts = loadVisitCounts();
 saveLinks(links);
 update();
 
-// ── Global event listeners ────────────────────────────────────────────────────
+// ── EVENT LISTENERS ──────────────────────────────────────────────────────────
 
-// Close category context-menu on outside click
 document.addEventListener("click", event => {
   if (!activeCategoryMenu) return;
   if (event.target.closest(".category-menu") || event.target.closest(".change-category-btn")) return;
   closeCategoryMenu();
 });
 
-// Search – only re-render (data has not changed)
 searchInput.addEventListener("input", () => {
   searchQuery = searchInput.value.trim().toLowerCase();
   render();
 });
 
-// Add link / empty category
 linkForm.addEventListener("submit", event => {
   event.preventDefault();
   const title = titleInput.value.trim();
@@ -882,7 +893,6 @@ linkForm.addEventListener("submit", event => {
   titleInput.focus();
 });
 
-// Export – now includes categoryOrder so it can be fully restored on import
 exportBtn.addEventListener("click", () => {
   const payload = {
     exportedAt: new Date().toISOString(),
@@ -900,7 +910,6 @@ exportBtn.addEventListener("click", () => {
   URL.revokeObjectURL(url);
 });
 
-// Import
 importBtn.addEventListener("click", () => {
   importFileInput.click();
 });
@@ -937,11 +946,8 @@ importFileInput.addEventListener("change", async event => {
       return;
     }
 
-    // Read categoryOrder from export file if present
     const importedCategoryOrder = Array.isArray(parsed.categoryOrder)
-      ? parsed.categoryOrder
-          .filter(c => typeof c === "string" && c.trim())
-          .map(c => c.trim())
+      ? parsed.categoryOrder.filter(c => typeof c === "string" && c.trim()).map(c => c.trim())
       : [];
 
     const shouldReplace = confirm(
@@ -956,7 +962,6 @@ importFileInput.addEventListener("change", async event => {
       }
     } else {
       setLinks([...importedLinks, ...links]);
-      // Prepend any new categories from the import to existing order
       if (importedCategoryOrder.length) {
         const newCategories = importedCategoryOrder.filter(c => !categoryOrder.includes(c));
         if (newCategories.length) {
@@ -1016,3 +1021,4 @@ editCancelBtn.addEventListener("click", () => {
   editDialog.close();
   editingLinkId = null;
 });
+
