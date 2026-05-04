@@ -16,7 +16,7 @@
     <section class="panel">
       <form id="linkForm" novalidate>
         <input id="titleInput" type="text" placeholder="Name">
-        <input id="urlInput" type="url" placeholder="URL (z. B. https://example.com)">
+        <input id="urlInput" type="text" placeholder="URL (z. B. https://example.com)" inputmode="url">
         <input id="categoryInput" type="text" list="categorySuggestions" placeholder="Kategorie" required>
         <datalist id="categorySuggestions"></datalist>
         <button type="submit">Hinzufügen</button>
@@ -66,5 +66,16 @@
   </dialog>
 
   <script src="./app.js"></script>
+
+  <!-- Setzt den Fokus beim Laden der Seite auf das Suchfeld -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) {
+        searchInput.focus();
+      }
+    });
+  </script>
+
 </body>
 </html>
