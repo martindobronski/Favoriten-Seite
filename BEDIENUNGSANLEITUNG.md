@@ -1,7 +1,7 @@
 # Meine Favoriten – Dokumentation und Bedienungsanleitung
 
 **Stand:** 5. Mai 2026
-**Version:** 0.4
+**Version:** 0.6
 
 ## 1. Überblick
 
@@ -64,7 +64,7 @@ Nutzen Sie das Suchfeld, um nach Titel, URL oder Kategorie zu filtern. Die Anzei
 
 ## 6. Datensicherheit & Privatsphäre
 
-### Lokale Favicons (Neu in v0.4)
+### Lokale Favicons
 
 Im Gegensatz zu vielen anderen Tools werden die kleinen Icons der Websites nicht über externe Dienste (wie Google) bezogen.
 
