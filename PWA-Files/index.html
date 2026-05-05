@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meine Favoriten</title>
+
+  <!-- ── PWA Meta-Tags ─────────────────────────────────────────────────── -->
+  <meta name="description" content="Persönliche Favoritenverwaltung für regelmäßig besuchte Seiten">
+  <meta name="theme-color" content="#317EFB">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Favoriten">
+
+  <!-- ── PWA Manifest ──────────────────────────────────────────────────── -->
+  <link rel="manifest" href="./manifest.json">
+
+  <!-- ── Apple Touch Icons (iOS Homescreen) ───────────────────────────── -->
+  <link rel="apple-touch-icon" sizes="192x192" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="./icons/icon-512.png">
+
+  <!-- ── Stylesheet ───────────────────────────────────────────────────── -->
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main>
+    <header class="page-header">
+      <h1 class="headerClass">Favoriten</h1>
+      <p class="intro">der regelmäßig besuchten Seiten</p>
+    </header>
+
+    <section class="panel">
+      <form id="linkForm" novalidate>
+        <input id="titleInput" type="text" placeholder="Name">
+        <input id="urlInput" type="text" placeholder="URL (z. B. https://example.com)" inputmode="url">
+        <input id="categoryInput" type="text" list="categorySuggestions" placeholder="Kategorie" required>
+        <datalist id="categorySuggestions"></datalist>
+        <button type="submit">Hinzufügen</button>
+      </form>
+      <div class="panel-actions">
+        <button id="sortCategoriesBtn" type="button" class="secondary-btn">↕️ Kategorien sortieren</button>
+        <button id="exportBtn" type="button" class="secondary-btn">⬇️ Export Favoriten</button>
+        <button id="importBtn" type="button" class="secondary-btn">⬆️ Import Favoriten</button>
+        <button id="toggleStatsBtn" type="button" class="secondary-btn">📊 Statistik anzeigen</button>
+        <a class="secondary-btn help-btn" href="./BEDIENUNGSANLEITUNG.pdf" target="_blank" rel="noopener noreferrer">❓ Hilfe</a>
+        <input id="importFileInput" type="file" accept="application/json,.json" hidden>
+      </div>
+    </section>
+
+    <div class="search-bar">
+      <input id="searchInput" type="search" placeholder="Favoriten durchsuchen …" aria-label="Favoriten durchsuchen">
+    </div>
+
+    <section id="tilesContainer" aria-live="polite"></section>
+
+    <footer class="app-version" aria-label="Programmversion">
+      Version 0.6 / &copy; MD. 2026
+    </footer>
+  </main>
+
+  <dialog id="editDialog" class="edit-dialog" aria-labelledby="editDialogTitle">
+    <form id="editForm" class="edit-form" method="dialog">
+      <h3 id="editDialogTitle">Kachel bearbeiten</h3>
+      <input id="editTitleInput" type="text" placeholder="Titel" required>
+      <input id="editUrlInput" type="url" placeholder="URL" required>
+      <input id="editCategoryInput" type="text" list="categorySuggestions" placeholder="Kategorie" required>
+      <div class="edit-actions">
+        <button type="button" id="editCancelBtn" class="secondary-btn">Abbrechen</button>
+        <button type="submit">Speichern</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="sortCategoriesDialog" class="sort-categories-dialog" aria-labelledby="sortCategoriesDialogTitle">
+    <form id="sortCategoriesForm" class="sort-categories-form" method="dialog">
+      <h3 id="sortCategoriesDialogTitle">Kategorien sortieren</h3>
+      <div id="sortCategoriesList" class="sort-categories-list" aria-live="polite"></div>
+      <div class="sort-actions">
+        <button type="button" id="sortCategoriesCancelBtn" class="secondary-btn">Abbrechen</button>
+        <button type="submit">Speichern</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="./app.js"></script>
+
+  <script>
+    // ── Service Worker registrieren ──────────────────────────────────────────
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('[PWA] Service Worker registriert:', reg.scope))
+          .catch(err => console.error('[PWA] Service Worker Fehler:', err));
+      });
+    }
+
+    // ── Suchfeld fokussieren ─────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) {
+        searchInput.focus();
+      }
+    });
+  </script>
+
+</body>
+</html>
