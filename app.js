@@ -2,7 +2,7 @@ const STORAGE_KEY = "favorite-links-v1";
 const CATEGORY_ORDER_KEY = "favorite-category-order-v1";
 const VISIT_COUNTS_KEY = "favorite-visit-counts-v1";
 const MOST_VISITED_CATEGORY = "Am häufigsten besucht";
-const MOST_VISITED_LIMIT = 5;
+const MOST_VISITED_LIMIT = 6;
 
 const linkForm = document.getElementById("linkForm");
 const titleInput = document.getElementById("titleInput");
@@ -13,6 +13,59 @@ const tilesContainer = document.getElementById("tilesContainer");
 const exportBtn = document.getElementById("exportBtn");
 const importBtn = document.getElementById("importBtn");
 const importFileInput = document.getElementById("importFileInput");
+// Auto-Export on change (debounced, toggleable)
+let autoExportEnabled = true;
+let autoExportSuppressed = true;
+let suppressAutoExportOnce = false;
+let exportDebounceTimer = null;
+const EXPORT_DEBOUNCE_MS = 5000;
+// Track if an auto-export has already been performed since the last change
+let autoExportTriggeredSinceLastChange = false;
+
+function buildBackupFilename() {
+  const dt = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const y = dt.getFullYear();
+  const m = pad(dt.getMonth() + 1);
+  const d = pad(dt.getDate());
+  const hh = pad(dt.getHours());
+  const mi = pad(dt.getMinutes());
+  const ss = pad(dt.getSeconds());
+  const timePart = `${y}${m}${d}-${hh}${mi}${ss}`;
+  let catPart = '';
+  try {
+    const cats = (categoryOrder || []).slice(0, 3).map(c => String(c).replace(/\s+/g, '_').replace(/[^A-Za-z0-9_-]/g, ''));
+    if (cats.length) catPart = '-' + cats.join('_');
+  } catch { /* ignore */ }
+  return `favoriten-links-backup-${timePart}${catPart}.json`;
+}
+
+function scheduleAutoExport() {
+  if (!autoExportEnabled || autoExportSuppressed || suppressAutoExportOnce) return;
+
+  if (exportDebounceTimer) clearTimeout(exportDebounceTimer);
+  exportDebounceTimer = setTimeout(exportCurrentState, EXPORT_DEBOUNCE_MS);
+}
+
+function exportCurrentState() {
+  try {
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      categoryOrder,
+      links
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = buildBackupFilename();
+    anchor.click();
+    URL.revokeObjectURL(url);
+    autoExportTriggeredSinceLastChange = true;
+  } catch (e) {
+    console.error("Auto-export fehlgeschlagen:", e);
+  }
+}
 const sortCategoriesBtn = document.getElementById("sortCategoriesBtn");
 const toggleStatsBtn = document.getElementById("toggleStatsBtn");
 const sortCategoriesDialog = document.getElementById("sortCategoriesDialog");
@@ -49,6 +102,8 @@ let pendingCategoryOrder = [];
 let searchQuery = "";
 let hasChanges = false;
 let statsVisible = false;
+// Suppress initial auto-export during first load; enable after initialization completes
+autoExportSuppressed = true;
 
 // ── SICHERE SPEICHERFUNKTION ──────────────────────────────────────────────────
 
@@ -137,6 +192,8 @@ function saveLinks(links) {
     const jsonData = JSON.stringify(links);
     const success = safeLocalStorageSetItem(STORAGE_KEY, jsonData);
     if (!success) console.error('Speichern von Links fehlgeschlagen.');
+    // Trigger debounced auto-export
+    scheduleAutoExport();
 }
 
 function setLinks(newLinks) {
@@ -163,6 +220,7 @@ function saveCategoryOrder(order) {
     const jsonData = JSON.stringify(order);
     safeLocalStorageSetItem(CATEGORY_ORDER_KEY, jsonData);
     hasChanges = true;
+    scheduleAutoExport();
 }
 
 // ── STORAGE: VISIT COUNTS ────────────────────────────────────────────────────
@@ -187,6 +245,7 @@ function saveVisitCounts(counts) {
     const jsonData = JSON.stringify(counts);
     const success = safeLocalStorageSetItem(VISIT_COUNTS_KEY, jsonData);
     if (!success) console.error('Speichern von Besuchszählern fehlgeschlagen.');
+    // Auto-export is intentionally not triggered by visit counter changes
 }
 
 function pruneVisitCounts() {
@@ -207,9 +266,16 @@ function pruneVisitCounts() {
 
 function recordVisit(linkId) {
     if (!linkId) return;
+
+    suppressAutoExportOnce = true; // 👈 wichtig
+
     visitCounts[linkId] = (visitCounts[linkId] || 0) + 1;
     saveVisitCounts(visitCounts);
-    setTimeout(update, 0);
+
+    setTimeout(() => {
+        update();
+        suppressAutoExportOnce = false; // wieder freigeben
+    }, 0);
 }
 
 // ── MOST-VISITED HELPERS ─────────────────────────────────────────────────────
@@ -967,6 +1033,15 @@ let categoryOrder = loadCategoryOrder();
 let visitCounts = loadVisitCounts();
 saveLinks(links);
 update();
+autoExportSuppressed = false;
+// Auto-export UI binding (minimal): respond to toggle, no status display
+const autoExportToggle = (typeof window !== 'undefined') ? document.getElementById('autoExportToggle') : null;
+if (autoExportToggle) {
+  autoExportEnabled = !!autoExportToggle.checked;
+  autoExportToggle.addEventListener('change', (e) => {
+    autoExportEnabled = !!e.target.checked;
+  });
+}
 
 hasChanges = false;
 
@@ -1203,6 +1278,13 @@ editCancelBtn.addEventListener("click", () => {
 
 window.addEventListener('beforeunload', (event) => {
     if (!hasChanges) {
+        return;
+    }
+
+    // If an auto-export has already been triggered since last change, skip another export
+    if (autoExportTriggeredSinceLastChange) {
+        hasChanges = false;
+        autoExportTriggeredSinceLastChange = false;
         return;
     }
 
