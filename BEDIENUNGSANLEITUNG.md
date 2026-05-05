@@ -1,231 +1,106 @@
-# Meine Favoriten - Dokumentation und Bedienungsanleitung
+# Meine Favoriten – Dokumentation und Bedienungsanleitung
 
-**Stand: 4. Mai 2026**
+**Stand:** 5. Mai 2026
+**Version:** 0.3
 
-## Überblick
+## 1. Überblick
 
-Diese kleine Webanwendung verwaltet persönliche Favoriten-Links direkt im Browser. Die Links werden als Kacheln angezeigt, nach Kategorien gruppiert und lokal im Browser gespeichert. Es gibt keine Server-Komponente und keine Anmeldung.
+Diese Webanwendung verwaltet Ihre persönlichen Favoriten-Links sicher und datenschutzkonform direkt in Ihrem Browser. Es gibt keine Server-Komponente, keine Anmeldung und keine Datenweitergabe an Dritte.
 
-Beim ersten Öffnen legt die Anwendung zwei Beispiel-Favoriten an:
+**Besonderheiten dieser Version:**
 
-*   Tagesschau in der Kategorie `Nachrichten`
-*   Wikipedia in der Kategorie `Wissen`
+* **Datenschutz:** Seiten-Icons (Favicons) werden direkt von den Ziel-Websites geladen oder lokal generiert. Es werden keine externen Dienste (wie Google) zur Icon-Anzeige genutzt.
+* **Automatische Sicherung:** Bei Änderungen wird beim Schließen des Tabs automatisch ein Backup erstellt.
+* **Lokale Speicherung:** Alle Daten verbleiben in Ihrem Browser (`localStorage`).
 
-Die Anwendung besteht aus drei Dateien:
+Beim ersten Start werden zwei Beispiel-Links angelegt: *Tagesschau* und *Wikipedia*.
 
-*   `index.html`: Grundstruktur der Seite, Formular, Import-/Export-Schaltflächen und Bearbeitungsdialog
-*   `styles.css`: Layout, Farben, responsive Darstellung, Dialoge, Tooltips und Drag-and-drop-Zustände
-*   `app.js`: komplette Anwendungslogik, lokale Speicherung, Validierung, Rendering, Import/Export und Bedienereignisse
+## 2. Starten der Anwendung
 
-## Starten der Anwendung
+1. Öffnen Sie den Projektordner.
+2. Starten Sie die Datei `index.html` in einem modernen Browser (Chrome, Firefox, Edge, Safari).
+3. Ein lokaler Webserver ist nicht erforderlich.
 
-Die Anwendung kann direkt im Browser geöffnet werden:
+## 3. Oberfläche
 
-1.  Öffnen Sie den Projektordner `Favoriten-Seite`.
-2.  Öffnen Sie die Datei `index.html` in einem modernen Browser.
+Die Anwendung ist in drei Hauptbereiche gegliedert:
 
-Ein lokaler Webserver ist nicht zwingend erforderlich, weil die Anwendung nur HTML, CSS, JavaScript und den Browser-Speicher verwendet.
+1. **Kopfbereich:** Titel, Eingabeformular für neue Links und Aktionsbuttons (Export, Import, Sortieren, Hilfe).
+2. **Suchleiste:** Ein Echtzeit-Suchfeld zum Filtern der Kacheln.
+3. **Kachel-Bereich:** Hier werden Ihre Favoriten, gruppiert nach Kategorien, angezeigt.
+4. **Fußzeile:** Zeigt die Versionsnummer und das Copyright.
 
-## Oberfläche
+## 4. Favoriten verwalten
 
-Die Seite zeigt oben ein Eingabeformular und darunter die Favoriten-Kacheln.
+### Hinzufügen
 
-Das Formular enthält:
+Geben Sie im oberen Formular **Name**, **URL** und **Kategorie** ein.
 
-*   `Name`: Anzeigename des Favoriten
-*   `URL`: Zieladresse des Favoriten
-*   `Kategorie`: Kategorie, in der der Favorit erscheinen soll
-*   `Hinzufügen`: legt einen neuen Favoriten oder eine neue leere Kategorie an
+* **URL:** Das Protokoll (`https://`) wird automatisch ergänzt, falls es fehlt. Auch spezielle Protokolle (z. B. `obsidian://`) werden unterstützt.
+* **Kategorie:** Geben Sie einen neuen Namen ein oder wählen Sie einen Vorschlag aus der Liste.
+* Klicken Sie auf **Hinzufügen**.
 
-Unter dem Formular befinden sich:
+> **Tipp:** Wenn Sie nur eine Kategorie eingeben und Name/URL leer lassen, wird eine leere Kategorie zur Strukturierung erstellt.
 
-*   `Kategorien sortieren`: öffnet einen Dialog, in dem die Kategorie-Reihenfolge geändert werden kann
-*   `Export Favoriten`: lädt die gespeicherten Favoriten als JSON-Datei herunter
-*   `Import Favoriten`: liest Favoriten aus einer JSON-Datei ein
-*   `Hilfe`: öffnet die Bedienungsanleitung als PDF (`BEDIENUNGSANLEITUNG.pdf`) in einem neuen Browser-Tab
+### Bearbeiten & Löschen
 
-Darunter befindet sich ein Suchfeld, mit dem die angezeigten Kacheln nach Name, URL oder Kategorie gefiltert werden können.
+Jede Kachel verfügt über eine Aktionsleiste am unteren Rand:
 
-Danach erscheinen die Kategorien. Wenn bereits Favoriten geöffnet wurden, erscheint ganz oben automatisch die Kategorie `Am häufigsten besucht` mit den bis zu fünf am häufigsten aufgerufenen Kacheln. Danach folgen die selbst angelegten Kategorien. Jede selbst angelegte Kategorie hat eine Überschrift und eine Lösch-Schaltfläche. Die Lösch-Schaltfläche ist nur nutzbar, wenn die Kategorie leer ist.
+* **✏️ (Bearbeiten):** Öffnet einen Dialog, um Titel, URL oder Kategorie zu ändern.
+* **🏷️ (Kategorie ändern):** Öffnet ein Menü, um den Link schnell in eine andere Kategorie zu verschieben.
+* **🗑 (Löschen):** Entfernt den Link nach einer Sicherheitsabfrage.
+* **↔️ (Verschieben):** Ziehen Sie dieses Symbol per Drag & Drop, um die Reihenfolge der Kacheln *innerhalb* einer Kategorie zu ändern.
 
-Am unteren Fensterrand wird eine feststehende Footer-Leiste mit Programmversion, Versionsdatum und Copyright-Vermerk angezeigt, zum Beispiel `Version 0.3 vom 04.05.2026 / © MD. 2026`.
+### Suchen
 
-## Favoriten hinzufügen
+Nutzen Sie das Suchfeld, um nach Titel, URL oder Kategorie zu filtern. Die Anzeige aktualisiert sich sofort während der Eingabe. Leere Kategorien werden während der Suche ausgeblendet.
 
-So legen Sie einen neuen Favoriten an:
+## 5. Kategorien
 
-1.  Tragen Sie einen Namen ein.
-2.  Tragen Sie eine URL ein.
-3.  Tragen Sie eine Kategorie ein oder wählen Sie eine vorhandene Kategorie aus der Vorschlagsliste.
-4.  Klicken Sie auf `Hinzufügen`.
+* **Am häufigsten besucht:** Diese Kategorie wird automatisch generiert und zeigt die bis zu 5 Links mit den meisten Klicks an. Sie kann nicht manuell bearbeitet oder gelöscht werden.
+* **Manuelle Kategorien:** Sie können Kategorien beliebig benennen.
+* **Kategorien sortieren:** Klicken Sie auf den Button **Kategorien sortieren**, um die Reihenfolge der Kategorien per Drag & Drop oder Pfeiltasten anzupassen.
+* **Löschen:** Eine leere Kategorie kann über das Mülleimer-Symbol (🗑) im Kategorie-Kopf gelöscht werden. Solange Links enthalten sind, ist dieser Button deaktiviert.
 
-Die URL darf mit oder ohne Protokoll (`http://`, `https://`) eingegeben werden. Wenn es fehlt, ergänzt die Anwendung automatisch `https://`. Auch benutzerdefinierte Protokolle (z. B. `obsidian://`) werden unterstützt.
+## 6. Datensicherheit & Privatsphäre
 
-Beispiele:
+### Lokale Favicons (Neu in v0.3)
 
-*   `https://example.com` bleibt `https://example.com`
-*   `example.com` wird zu `https://example.com`
-*   `obsidian://open?vault=MeinVault` bleibt unverändert.
+Im Gegensatz zu vielen anderen Tools werden die kleinen Icons der Websites nicht über externe Dienste (wie Google) bezogen.
 
-Wenn Name oder URL fehlen, zeigt die Anwendung eine Meldung an. Eine Ausnahme gibt es für das Erstellen leerer Kategorien.
+* Die Anwendung versucht, das Icon direkt von der Zielwebsite (`domain.de/favicon.ico`) zu laden.
+* Falls dies nicht möglich ist, wird ein neutrales, lokal im Code enthaltenes Platzhalter-Symbol verwendet.
+* **Vorteil:** Es werden keine Daten über Ihr Surfverhalten an Drittanbieter übermittelt.
 
-## Leere Kategorien erstellen
+### Speicherung
 
-Eine leere Kategorie wird erstellt, indem nur das Feld `Kategorie` ausgefüllt wird. Die Felder `Name` und `URL` bleiben leer.
+Alle Daten werden im `localStorage` Ihres Browsers gespeichert.
 
-Nach dem Klick auf `Hinzufügen` erscheint die neue Kategorie als eigener Abschnitt mit dem Hinweis `Noch keine Kacheln in dieser Kategorie.`
+* **Speicherlimit:** Wenn der Speicher voll läuft, werden automatisch alte Besucherzähler bereinigt. Sollte dies nicht reichen, erhalten Sie eine Warnung und sollten einen Export durchführen.
+* **Datenverlust vermeiden:** Die Daten sind an den aktuellen Browser gebunden. Löschen Sie den Browser-Cache, sind die Daten weg, sofern kein Export vorliegt.
 
-Leere Kategorien sind nützlich, um die Struktur vorzubereiten, bevor Favoriten einsortiert werden.
+### Export & Import
 
-## Favoriten suchen
+* **Manueller Export:** Klicken Sie auf **Export Favoriten**, um eine JSON-Sicherungsdatei herunterzuladen.
+* **Automatischer Backup-Export (Neu in v0.3):** Wenn Sie die Seite schließen, während Sie Änderungen vorgenommen haben (neue Links, gelöschte Kategorien etc.), versucht der Browser automatisch, eine Backup-Datei (`favoriten-backup-YYYY-MM-DD.json`) herunterzuladen.
+  * *Hinweis:* Je nach Browser-Einstellung wird diese Datei eventuell blockiert oder im Download-Ordner gespeichert, ohne dass eine Rückfrage erscheint. Prüfen Sie bei wichtigen Änderungen stets Ihren Download-Ordner.
+* **Import:** Klicken Sie auf **Import Favoriten**, um eine zuvor exportierte JSON-Datei wiederherzustellen. Sie können wählen, ob die vorhandenen Daten ersetzt oder ergänzt werden sollen.
 
-Das Suchfeld zwischen Formular und Kachelbereich filtert die angezeigten Kacheln in Echtzeit.
+## 7. Fehlerbehebung
 
-Gesucht wird in:
+| Problem                            | Lösung                                                                                                                                                       |
+|:---------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Icons werden nicht angezeigt**   | Die Zielwebsite bietet kein Standard-Favicon an. Es wird automatisch ein graues Platzhalter-Symbol angezeigt.                                                |
+| **"Speicher ist voll" Meldung**    | Exportieren Sie sofort Ihre Daten. Löschen Sie alte, nicht mehr benötigte Links. Leeren Sie ggf. den Browser-Cache für andere Seiten.                        |
+| **Links nach Browser-Update weg**  | Wurde der Browser-Cache gelöscht? Importieren Sie die letzte Backup-Datei aus Ihrem Download-Ordner.                                                         |
+| **Drag & Drop funktioniert nicht** | Auf mobilen Geräten (Touchscreen) wird das native Drag & Drop oft nicht unterstützt. Nutzen Sie hier die Buttons zum Verschieben oder einen Desktop-Browser. |
 
-*   Name der Kachel
-*   URL der Kachel
-*   Kategorie der Kachel
+## 8. Technische Hinweise
 
-Kategorien ohne Treffer werden ausgeblendet. Wenn keine Kachel zum Suchbegriff passt, erscheint eine entsprechende Meldung. Das Leeren des Suchfelds zeigt wieder alle Kacheln an. Die Suche verändert keine gespeicherten Daten.
+* **Kein Server:** Die Anwendung läuft vollständig clientseitig.
+* **Kompatibilität:** Erfordert einen modernen Browser mit Unterstützung für ES6 JavaScript, LocalStorage und HTML5 Dialogs.
+* **Sicherheit:** Beim Import werden URLs validiert. Gefährliche Protokolle (wie `javascript:`) werden blockiert.
 
-## Favoriten öffnen
+---
 
-Ein Klick auf den Textbereich einer Kachel öffnet die gespeicherte URL. Web-Adressen (`http/https`) öffnen sich in einem neuen Browser-Tab, während benutzerdefinierte Protokolle im selben Tab aufgerufen werden.
-
-Jeder Klick auf eine Kachel wird lokal gezählt. Aus diesen Zählern erstellt die Anwendung automatisch die Kategorie `Am häufigsten besucht`. Die Kacheln bleiben weiterhin in ihren eigentlichen Kategorien; der automatische Abschnitt ist nur eine zusätzliche Anzeige. Die Besuchsanzahl wird als kleine Zahl links in der Aktionsleiste jeder Kachel angezeigt.
-
-## Favoriten bearbeiten
-
-Jede Kachel hat eine Bearbeiten-Schaltfläche mit Stift-Symbol (`✏️`).
-
-So bearbeiten Sie eine Kachel:
-
-1.  Klicken Sie auf das Stift-Symbol der Kachel.
-2.  Ändern Sie Titel, URL oder Kategorie im Dialog.
-3.  Klicken Sie auf `Speichern`.
-
-Mit `Abbrechen` oder durch Drücken der `Escape`-Taste wird der Dialog geschlossen, ohne Änderungen zu speichern.
-
-Beim Speichern prüft die Anwendung:
-
-*   Der Titel darf nicht leer sein.
-*   Die URL muss gültig sein.
-*   Eine leere Kategorie wird als `Allgemein` gespeichert.
-
-Wenn beim Bearbeiten eine neue Kategorie eingetragen wird, legt die Anwendung diese Kategorie automatisch an.
-
-## Favoriten löschen
-
-Jede Kachel hat eine Lösch-Schaltfläche mit Papierkorb-Symbol (`🗑`).
-
-Ein Klick darauf öffnet eine Bestätigungsabfrage. Nach Bestätigung wird der Favorit sofort aus der Liste entfernt und die Änderung im Browser gespeichert. Es gibt keine eingebaute Rückgängig-Funktion.
-
-## Kategorie einer Kachel ändern
-
-Jede Kachel hat eine Kategorie-Schaltfläche mit Etikett-Symbol (`🏷️`).
-
-So verschieben Sie eine Kachel in eine andere Kategorie:
-
-1.  Klicken Sie auf das Etikett-Symbol.
-2.  Wählen Sie im Menü eine andere Kategorie aus.
-
-Das Menü zeigt nur vorhandene Kategorien außer der aktuellen Kategorie und sortiert sie alphabetisch. Wenn es keine andere Kategorie gibt, erscheint eine Meldung.
-
-## Kacheln sortieren
-
-Kacheln können innerhalb ihrer Kategorie per Drag-and-drop sortiert werden.
-
-So ändern Sie die Reihenfolge:
-
-1.  Greifen Sie die Kachel am Verschiebe-Symbol (`↔️`).
-2.  Ziehen Sie sie auf eine andere Kachel derselben Kategorie.
-3.  Lassen Sie sie los.
-
-Die neue Reihenfolge wird sofort im Browser gespeichert.
-
-Wichtig: Eine Kachel kann per Drag-and-drop nicht in eine andere Kategorie gezogen werden. Kacheln im automatischen Abschnitt `Am häufigsten besucht` können nicht manuell sortiert werden.
-
-## Kategorien sortieren
-
-Kategorien können über den Button `Kategorien sortieren` neu angeordnet werden.
-
-So ändern Sie die Reihenfolge im Sortierdialog:
-
-1.  Klicken Sie auf `Kategorien sortieren`.
-2.  Verschieben Sie Kategorien per Drag-and-drop innerhalb der Liste oder nutzen Sie die Pfeil-Schaltflächen.
-3.  Verwenden Sie die Doppelpfeile (`⇧`/`⇩`), um eine Kategorie direkt ganz nach oben oder ganz nach unten zu verschieben.
-4.  Klicken Sie auf `Speichern`.
-
-Mit `Abbrechen` oder durch Drücken der `Escape`-Taste wird der Dialog geschlossen, ohne die geänderte Reihenfolge zu übernehmen.
-
-## Kategorien löschen
-
-Eine Kategorie kann nur gelöscht werden, wenn sie keine Kacheln enthält.
-
-So löschen Sie eine leere Kategorie:
-
-1.  Stellen Sie sicher, dass in der Kategorie keine Kacheln vorhanden sind.
-2.  Klicken Sie auf das Papierkorb-Symbol (`🗑`) im Kategorie-Kopf.
-
-Wenn eine Kategorie noch Kacheln enthält, ist die Lösch-Schaltfläche deaktiviert.
-
-## Import und Export
-
-### Export
-
-Ein Klick auf `Export Favoriten` erstellt eine Datei mit dem Namen `favoriten-links.json`. Diese enthält alle Links und die Sortierreihenfolge der Kategorien.
-
-### Automatischer Backup-Export
-
-**Neu:** Wenn Sie die Seite mit ungespeicherten Änderungen verlassen, versucht die Anwendung automatisch, eine Backup-Datei herunterzuladen (z. B. `favoriten-backup-2026-05-04.json`). Überprüfen Sie Ihren Download-Ordner, um sicherzustellen, dass das Backup erfolgreich war.
-
-### Import
-
-Ein Klick auf `Import Favoriten` öffnet die Dateiauswahl für JSON-Dateien.
-
-Unterstützt werden zwei Formate:
-
-*   ein Objekt mit einem Feld `links` (und optionalem Feld `categoryOrder`)
-*   direkt ein Array von Link-Objekten
-
-Nach dem Einlesen fragt die Anwendung, ob die vorhandenen Links ersetzt oder ergänzt werden sollen.
-
-## Datenspeicherung
-
-Die Anwendung speichert alle Daten lokal im Browser über `localStorage`.
-
-Verwendete Schlüssel:
-
-*   `favorite-links-v1`: Favoriten-Liste
-*   `favorite-category-order-v1`: Reihenfolge der Kategorien
-*   `favorite-visit-counts-v1`: lokale Besuchszähler
-
-Die Daten bleiben erhalten, solange der Browser-Speicher für diese Seite nicht gelöscht wird.
-
-Wichtig: Die Daten sind an den Browser und die genaue Herkunft der geöffneten Seite gebunden. Für eine Übertragung zwischen Geräten oder Browsern sollte der JSON-Export verwendet werden.
-
-## Einschränkungen
-
-*   Keine automatische Synchronisation zwischen Geräten
-*   Keine Benutzerkonten und keine serverseitige Sicherung
-*   Keine Rückgängig-Funktion
-*   Kein Drag-and-drop-Wechsel einer Kachel in eine andere Kategorie (bitte das Etikett-Symbol `🏷️` verwenden)
-
-## Fehlerbehebung
-
-### Meine Favoriten sind verschwunden
-
-Prüfen Sie, ob Sie die Seite im selben Browser geöffnet haben. Wenn Browserdaten gelöscht wurden, kann der lokale Speicher entfernt worden sein. Verwenden Sie vorhandene JSON-Exporte (manuell oder automatisch), um die Favoriten wiederherzustellen.
-
-### Der Speicher ist voll
-
-Die Anwendung warnt Sie, wenn der lokale Speicher des Browsers voll ist. In diesem Fall:
-
-1.  Exportieren Sie Ihre Daten **sofort** über den `Export Favoriten`-Button.
-2.  Löschen Sie alte, nicht mehr benötigte Favoriten, um Platz zu schaffen.
-3.  Importieren Sie ggf. die gesicherten Daten nach der Bereinigung.
-
-### Ich kann eine Kategorie nicht löschen
-
-Kategorien mit Kacheln können nicht gelöscht werden. Löschen oder verschieben Sie zuerst alle Kacheln aus der Kategorie.
+*Entwickelt mit Fokus auf Datenschutz, Unabhängigkeit und lokale Datensouveränität.*
