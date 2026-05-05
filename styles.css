@@ -41,6 +41,15 @@ main {
 h1 {
   margin-top: 0;
   font-size: clamp(1.6rem, 1.3rem + 1.5vw, 2.3rem);
+  /* Fügen Sie dies zu Ihrer CSS-Regel für die Überschrift hinzu */
+  /* Weicher Leuchteffekt für dunkle Hintergründe */
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.7);
+}
+
+.headerClass {
+  color: #FFD700;
+  -webkit-text-stroke-width: 1px;
+  -webkit-text-stroke-color: black;
 }
 
 .page-header {
