@@ -14,7 +14,10 @@ const exportBtn = document.getElementById("exportBtn");
 const importBtn = document.getElementById("importBtn");
 const importFileInput = document.getElementById("importFileInput");
 // Auto-Export on change (debounced, toggleable)
-let autoExportEnabled = true;
+//let autoExportEnabled = true;
+const storedAutoExport = localStorage.getItem('autoExportEnabled');
+let autoExportEnabled = storedAutoExport === null ? true : storedAutoExport === 'true';
+
 let autoExportSuppressed = true;
 let suppressAutoExportOnce = false;
 let exportDebounceTimer = null;
@@ -23,66 +26,73 @@ const EXPORT_DEBOUNCE_MS = 5000; // 10 Sekunden bis Export nach Änderung
 let autoExportTriggeredSinceLastChange = false;
 
 function buildBackupFilename() {
-  const dt = new Date();
-  const pad = (n) => String(n).padStart(2, '0');
-  const y = dt.getFullYear();
-  const m = pad(dt.getMonth() + 1);
-  const d = pad(dt.getDate());
-  const hh = pad(dt.getHours());
-  const mi = pad(dt.getMinutes());
-  const ss = pad(dt.getSeconds());
-  const timePart = `${y}${m}${d}-${hh}${mi}${ss}`;
-  let catPart = '';
-  try {
-    const cats = (categoryOrder || []).slice(0, 3).map(c => String(c).replace(/\s+/g, '_').replace(/[^A-Za-z0-9_-]/g, ''));
-    if (cats.length) catPart = '-' + cats.join('_');
-  } catch { /* ignore */ }
-  return `favoriten-links-backup-${timePart}${catPart}.json`;
+    const dt = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const y = dt.getFullYear();
+    const m = pad(dt.getMonth() + 1);
+    const d = pad(dt.getDate());
+    const hh = pad(dt.getHours());
+    const mi = pad(dt.getMinutes());
+    const ss = pad(dt.getSeconds());
+    const timePart = `${y}${m}${d}-${hh}${mi}${ss}`;
+    let catPart = '';
+    try {
+        const cats = (categoryOrder || []).slice(0, 3).map(c => String(c).replace(/\s+/g, '_').replace(/[^A-Za-z0-9_-]/g, ''));
+        if (cats.length) catPart = '-' + cats.join('_');
+    } catch {
+        /* ignore */
+    }
+    return `favoriten-links-backup-${timePart}${catPart}.json`;
 }
 
 function scheduleAutoExport() {
-  if (!autoExportEnabled || autoExportSuppressed || suppressAutoExportOnce) return;
+    if (!autoExportEnabled || autoExportSuppressed || suppressAutoExportOnce) return;
 
-  // 👉 Jede Änderung = neuer Debounce-Zyklus
-  autoExportTriggeredSinceLastChange = false;
+    // 👉 Jede Änderung = neuer Debounce-Zyklus
+    autoExportTriggeredSinceLastChange = false;
 
-  // 👉 Timer IMMER neu starten
-  if (exportDebounceTimer) {
-    clearTimeout(exportDebounceTimer);
-  }
+    // 👉 Timer IMMER neu starten
+    if (exportDebounceTimer) {
+        clearTimeout(exportDebounceTimer);
+    }
 
-  exportDebounceTimer = setTimeout(() => {
-    exportCurrentState();
-  }, EXPORT_DEBOUNCE_MS);
+    exportDebounceTimer = setTimeout(() => {
+        exportCurrentState();
+    }, EXPORT_DEBOUNCE_MS);
+}
+
+function setAutoExportEnabled(value) {
+    autoExportEnabled = value;
+    localStorage.setItem('autoExportEnabled', String(value));
 }
 
 function exportCurrentState() {
-  try {
-    const payload = {
-      exportedAt: new Date().toISOString(),
-      categoryOrder,
-      links
-    };
+    try {
+        const payload = {
+            exportedAt: new Date().toISOString(),
+            categoryOrder,
+            links
+        };
 
-    const blob = new Blob([JSON.stringify(payload, null, 2)], {
-      type: "application/json"
-    });
+        const blob = new Blob([JSON.stringify(payload, null, 2)], {
+            type: "application/json"
+        });
 
-    const url = URL.createObjectURL(blob);
+        const url = URL.createObjectURL(blob);
 
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = buildBackupFilename();
-    anchor.click();
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = buildBackupFilename();
+        anchor.click();
 
-    URL.revokeObjectURL(url);
+        URL.revokeObjectURL(url);
 
-    // 👉 Merken: Export wurde ausgeführt
-    autoExportTriggeredSinceLastChange = true;
+        // 👉 Merken: Export wurde ausgeführt
+        autoExportTriggeredSinceLastChange = true;
 
-  } catch (e) {
-    console.error("Auto-export fehlgeschlagen:", e);
-  }
+    } catch (e) {
+        console.error("Auto-export fehlgeschlagen:", e);
+    }
 }
 
 const sortCategoriesBtn = document.getElementById("sortCategoriesBtn");
@@ -660,7 +670,7 @@ function createTile(link, options = {}) {
 
             // Mixed Content vermeiden: HTTP-Favicon auf HTTPS-Seite nicht laden
             if (location.protocol === 'https:' && urlObj.protocol === 'http:') {
-               throw new Error('Mixed Content');
+                throw new Error('Mixed Content');
             }
 
             favicon.src = `${domain}/favicon.ico`;
@@ -909,7 +919,7 @@ function renderTopStats() {
     // Wenn keine Stats da sind und Container existiert -> entfernen
     if (stats.length === 0) {
         if (statsContainer) statsContainer.remove();
-        if(toggleStatsBtn) {
+        if (toggleStatsBtn) {
             toggleStatsBtn.textContent = "📊 Statistik anzeigen";
             toggleStatsBtn.disabled = true;
             toggleStatsBtn.title = "Keine besuchten Links vorhanden";
@@ -919,7 +929,7 @@ function renderTopStats() {
     }
 
     // Button aktivieren, wenn Daten da sind
-    if(toggleStatsBtn) {
+    if (toggleStatsBtn) {
         toggleStatsBtn.disabled = false;
         toggleStatsBtn.title = "Statistik ein- oder ausblenden";
         // Text nur aktualisieren, wenn er nicht schon korrekt ist
@@ -964,9 +974,18 @@ function renderTopStats() {
         // Besondere Klassen für die Top 3
         let rankClass = "";
         let icon = "🔹";
-        if (rank === 1) { rankClass = "rank-1"; icon = "🥇"; }
-        if (rank === 2) { rankClass = "rank-2"; icon = "🥈"; }
-        if (rank === 3) { rankClass = "rank-3"; icon = "🥉"; }
+        if (rank === 1) {
+            rankClass = "rank-1";
+            icon = "🥇";
+        }
+        if (rank === 2) {
+            rankClass = "rank-2";
+            icon = "🥈";
+        }
+        if (rank === 3) {
+            rankClass = "rank-3";
+            icon = "🥉";
+        }
 
         html += `
             <div class="stat-row ${rankClass}">
@@ -1068,10 +1087,11 @@ autoExportSuppressed = false;
 // Auto-export UI binding (minimal): respond to toggle, no status display
 const autoExportToggle = (typeof window !== 'undefined') ? document.getElementById('autoExportToggle') : null;
 if (autoExportToggle) {
-  autoExportEnabled = !!autoExportToggle.checked;
-  autoExportToggle.addEventListener('change', (e) => {
-    autoExportEnabled = !!e.target.checked;
-  });
+    autoExportToggle.checked = autoExportEnabled;
+    autoExportEnabled = !!autoExportToggle.checked;
+    autoExportToggle.addEventListener('change', (e) => {
+        setAutoExportEnabled(!!e.target.checked);
+    });
 }
 
 hasChanges = false;
@@ -1176,7 +1196,7 @@ exportBtn.addEventListener("click", () => {
     URL.revokeObjectURL(url);
     hasChanges = false;
 
-     // 👉 danach Debounce-Zyklus neu starten
+    // 👉 danach Debounce-Zyklus neu starten
     scheduleAutoExport();
 
 });
@@ -1230,32 +1250,34 @@ importFileInput.addEventListener("change", async event => {
                 categoryOrder = importedCategoryOrder;
                 saveCategoryOrder(categoryOrder);
             }
-    } else {
-        // Merge imported links with existing ones safely:
-        // 1) Remove potential duplicates by id by keeping imported entries first
-        // 2) If a duplicate id exists in existing links, the imported version overwrites it
-        // 3) Keep existing links that are not present in the import
-        // Also ensure imported links have unique ids within themselves
-        const importedUnique = [];
-        const seenIds = new Set();
-        for (const l of importedLinks) {
-            if (!l || !l.id) continue;
-            if (seenIds.has(l.id)) continue;
-            seenIds.add(l.id);
-            importedUnique.push({ ...l });
-        }
+        } else {
+            // Merge imported links with existing ones safely:
+            // 1) Remove potential duplicates by id by keeping imported entries first
+            // 2) If a duplicate id exists in existing links, the imported version overwrites it
+            // 3) Keep existing links that are not present in the import
+            // Also ensure imported links have unique ids within themselves
+            const importedUnique = [];
+            const seenIds = new Set();
+            for (const l of importedLinks) {
+                if (!l || !l.id) continue;
+                if (seenIds.has(l.id)) continue;
+                seenIds.add(l.id);
+                importedUnique.push({
+                    ...l
+                });
+            }
 
-        const existingNonDuplicates = links.filter(l => !importedUnique.find(il => il.id === l.id));
-        const mergedLinks = [...importedUnique, ...existingNonDuplicates];
-        setLinks(mergedLinks);
-        if (importedCategoryOrder.length) {
-            const newCategories = importedCategoryOrder.filter(c => !categoryOrder.includes(c));
-            if (newCategories.length) {
-                categoryOrder = [...newCategories, ...categoryOrder];
-                saveCategoryOrder(categoryOrder);
+            const existingNonDuplicates = links.filter(l => !importedUnique.find(il => il.id === l.id));
+            const mergedLinks = [...importedUnique, ...existingNonDuplicates];
+            setLinks(mergedLinks);
+            if (importedCategoryOrder.length) {
+                const newCategories = importedCategoryOrder.filter(c => !categoryOrder.includes(c));
+                if (newCategories.length) {
+                    categoryOrder = [...newCategories, ...categoryOrder];
+                    saveCategoryOrder(categoryOrder);
+                }
             }
         }
-    }
 
         update();
     } catch {
