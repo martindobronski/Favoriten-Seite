@@ -25,6 +25,17 @@ const EXPORT_DEBOUNCE_MS = 5000; // 5 Sekunden bis Export nach Änderung
 // Track if an auto-export has already been performed since the last change
 let autoExportTriggeredSinceLastChange = false;
 
+const resetStatsBtn = document.getElementById("resetStatsBtn");
+
+if (resetStatsBtn) {
+    resetStatsBtn.addEventListener("click", () => {
+        if (!confirm("Alle Besuchszähler zurücksetzen?")) return;
+        visitCounts = {};
+        saveVisitCounts(visitCounts);
+        update();
+    });
+}
+
 function buildBackupFilename() {
     const dt = new Date();
     const pad = (n) => String(n).padStart(2, '0');
