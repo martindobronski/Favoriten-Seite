@@ -89,16 +89,21 @@ function normalizeUrl(rawUrl) {
   const value = rawUrl.trim();
   if (!value) return "";
 
-  // Prüfen, ob bereits ein Schema vorhanden ist.
-  // Wir erlauben jetzt explizit Buchstaben, Zahlen, +, -, . UND das @-Zeichen im Schema-Kontext,
-  // aber wichtiger: Wir prüfen nur auf das Schema am Anfang.
-  // Wenn ein Schema da ist, geben wir die URL unverändert zurück.
-  if (/^[a-zA-Z][a-zA-Z0-9+\-.]*:\/\//.test(value)) {
+  // Korrigierter regulärer Ausdruck:
+  // ^            - Am Anfang der Zeichenkette
+  // [a-zA-Z]+    - Mindestens ein Buchstabe (für das Protokoll, z.B. "http" oder "msteams")
+  // :            - Direkt gefolgt von einem Doppelpunkt
+  const protocolRegex = /^[a-zA-Z]+:/;
+
+  // Prüfen, ob die URL mit einem beliebigen Protokoll beginnt.
+  if (protocolRegex.test(value)) {
+    // Wenn ja, die URL unverändert zurückgeben.
+    // Das funktioniert für "https://example.com", "msteams:chat", "obsidian://open" etc.
     return value;
   }
 
-  // Wenn kein Schema da ist, fügen wir https:// hinzu.
-  // Das @-Zeichen bleibt dabei erhalten, da es Teil des Strings ist.
+  // Wenn kein Protokoll gefunden wurde, "https://" voranstellen.
+  // Das funktioniert für "example.com" -> "https://example.com"
   return "https://" + value;
 }
 
@@ -135,7 +140,7 @@ function saveLinks(links) {
 function setLinks(newLinks) {
   links = newLinks;
   saveLinks(links);
-  hasChanges = true; // NEU: Änderung markieren
+  hasChanges = true;
 }
 
 // ── STORAGE: CATEGORY ORDER ──────────────────────────────────────────────────
@@ -202,7 +207,6 @@ function recordVisit(linkId) {
   if (!linkId) return;
   visitCounts[linkId] = (visitCounts[linkId] || 0) + 1;
   saveVisitCounts(visitCounts);
-  // hasChanges = true; // Optional: Hier deaktiviert, um den Nutzer beim reinen Surfen nicht zu nerven
   setTimeout(update, 0);
 }
 
@@ -694,7 +698,7 @@ function createTile(link, options = {}) {
 // ── CATEGORY-SUGGESTIONS DATALIST ────────────────────────────────────────────
 
 function renderCategorySuggestions() {
-  const categories = [...new Set(links.map(link => normalizeCategory(link.category)))];
+  const categories = [...categoryOrder];
   categorySuggestions.innerHTML = "";
   categories.forEach(category => {
     const option = document.createElement("option");
@@ -843,6 +847,8 @@ let visitCounts = loadVisitCounts();
 saveLinks(links);
 update();
 
+hasChanges = false;
+
 // ── EVENT LISTENERS ──────────────────────────────────────────────────────────
 
 document.addEventListener("click", event => {
@@ -964,18 +970,18 @@ importFileInput.addEventListener("change", async event => {
     );
 
     if (shouldReplace) {
-      setLinks(importedLinks); // setLinks setzt bereits hasChanges = true
+      setLinks(importedLinks);
       if (importedCategoryOrder.length) {
         categoryOrder = importedCategoryOrder;
-        saveCategoryOrder(categoryOrder); // saveCategoryOrder setzt bereits hasChanges = true
+        saveCategoryOrder(categoryOrder);
       }
     } else {
-      setLinks([...importedLinks, ...links]); // setLinks setzt bereits hasChanges = true
+      setLinks([...importedLinks, ...links]);
       if (importedCategoryOrder.length) {
         const newCategories = importedCategoryOrder.filter(c => !categoryOrder.includes(c));
         if (newCategories.length) {
           categoryOrder = [...newCategories, ...categoryOrder];
-          saveCategoryOrder(categoryOrder); // saveCategoryOrder setzt bereits hasChanges = true
+          saveCategoryOrder(categoryOrder);
         }
       }
     }
@@ -1015,7 +1021,7 @@ editForm.addEventListener("submit", event => {
   link.url = normalizedUrl;
   link.category = normalizedCategory;
   saveLinks(links);
-  hasChanges = true; // NEU: Änderung markieren
+  hasChanges = true;
 
   if (!categoryOrder.includes(normalizedCategory)) {
     categoryOrder.unshift(normalizedCategory);
