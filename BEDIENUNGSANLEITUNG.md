@@ -1,106 +1,205 @@
-# Meine Favoriten – Dokumentation und Bedienungsanleitung
+# Meine Favoriten – Bedienungsanleitung
 
-**Stand:** 5. Mai 2026
-**Version:** 0.6
-
-## 1. Überblick
-
-Diese Webanwendung verwaltet Ihre persönlichen Favoriten-Links sicher und datenschutzkonform direkt in Ihrem Browser. Es gibt keine Server-Komponente, keine Anmeldung und keine Datenweitergabe an Dritte.
-
-**Besonderheiten dieser Version:**
-
-* **Datenschutz:** Seiten-Icons (Favicons) werden direkt von den Ziel-Websites geladen oder lokal generiert. Es werden keine externen Dienste (wie Google) zur Icon-Anzeige genutzt.
-* **Automatische Sicherung:** Bei Änderungen wird beim Schließen des Tabs automatisch ein Backup erstellt.
-* **Lokale Speicherung:** Alle Daten verbleiben in Ihrem Browser (`localStorage`).
-
-Beim ersten Start werden zwei Beispiel-Links angelegt: *Tagesschau* und *Wikipedia*.
-
-## 2. Starten der Anwendung
-
-1. Öffnen Sie den Projektordner.
-2. Starten Sie die Datei `index.html` in einem modernen Browser (Chrome, Firefox, Edge, Safari).
-3. Ein lokaler Webserver ist nicht erforderlich.
-
-## 3. Oberfläche
-
-Die Anwendung ist in drei Hauptbereiche gegliedert:
-
-1. **Kopfbereich:** Titel, Eingabeformular für neue Links und Aktionsbuttons (Export, Import, Sortieren, Hilfe).
-2. **Suchleiste:** Ein Echtzeit-Suchfeld zum Filtern der Kacheln.
-3. **Kachel-Bereich:** Hier werden Ihre Favoriten, gruppiert nach Kategorien, angezeigt.
-4. **Fußzeile:** Zeigt die Versionsnummer und das Copyright.
-
-## 4. Favoriten verwalten
-
-### Hinzufügen
-
-Geben Sie im oberen Formular **Name**, **URL** und **Kategorie** ein.
-
-* **URL:** Das Protokoll (`https://`) wird automatisch ergänzt, falls es fehlt. Auch spezielle Protokolle (z. B. `obsidian://`) werden unterstützt.
-* **Kategorie:** Geben Sie einen neuen Namen ein oder wählen Sie einen Vorschlag aus der Liste.
-* Klicken Sie auf **Hinzufügen**.
-
-> **Tipp:** Wenn Sie nur eine Kategorie eingeben und Name/URL leer lassen, wird eine leere Kategorie zur Strukturierung erstellt.
-
-### Bearbeiten & Löschen
-
-Jede Kachel verfügt über eine Aktionsleiste am unteren Rand:
-
-* **✏️ (Bearbeiten):** Öffnet einen Dialog, um Titel, URL oder Kategorie zu ändern.
-* **🏷️ (Kategorie ändern):** Öffnet ein Menü, um den Link schnell in eine andere Kategorie zu verschieben.
-* **🗑 (Löschen):** Entfernt den Link nach einer Sicherheitsabfrage.
-* **↔️ (Verschieben):** Ziehen Sie dieses Symbol per Drag & Drop, um die Reihenfolge der Kacheln *innerhalb* einer Kategorie zu ändern.
-
-### Suchen
-
-Nutzen Sie das Suchfeld, um nach Titel, URL oder Kategorie zu filtern. Die Anzeige aktualisiert sich sofort während der Eingabe. Leere Kategorien werden während der Suche ausgeblendet.
-
-## 5. Kategorien
-
-* **Am häufigsten besucht:** Diese Kategorie wird automatisch generiert und zeigt die bis zu 5 Links mit den meisten Klicks an. Sie kann nicht manuell bearbeitet oder gelöscht werden.
-* **Manuelle Kategorien:** Sie können Kategorien beliebig benennen.
-* **Kategorien sortieren:** Klicken Sie auf den Button **Kategorien sortieren**, um die Reihenfolge der Kategorien per Drag & Drop oder Pfeiltasten anzupassen.
-* **Löschen:** Eine leere Kategorie kann über das Mülleimer-Symbol (🗑) im Kategorie-Kopf gelöscht werden. Solange Links enthalten sind, ist dieser Button deaktiviert.
-
-## 6. Datensicherheit & Privatsphäre
-
-### Lokale Favicons
-
-Im Gegensatz zu vielen anderen Tools werden die kleinen Icons der Websites nicht über externe Dienste (wie Google) bezogen.
-
-* Die Anwendung versucht, das Icon direkt von der Zielwebsite (`domain.de/favicon.ico`) zu laden.
-* Falls dies nicht möglich ist, wird ein neutrales, lokal im Code enthaltenes Platzhalter-Symbol verwendet.
-* **Vorteil:** Es werden keine Daten über Ihr Surfverhalten an Drittanbieter übermittelt.
-
-### Speicherung
-
-Alle Daten werden im `localStorage` Ihres Browsers gespeichert.
-
-* **Speicherlimit:** Wenn der Speicher voll läuft, werden automatisch alte Besucherzähler bereinigt. Sollte dies nicht reichen, erhalten Sie eine Warnung und sollten einen Export durchführen.
-* **Datenverlust vermeiden:** Die Daten sind an den aktuellen Browser gebunden. Löschen Sie den Browser-Cache, sind die Daten weg, sofern kein Export vorliegt.
-
-### Export & Import
-
-* **Manueller Export:** Klicken Sie auf **Export Favoriten**, um eine JSON-Sicherungsdatei herunterzuladen.
-* **Automatischer Backup-Export:** Wenn Sie die Seite schließen, während Sie Änderungen vorgenommen haben (neue Links, gelöschte Kategorien etc.), versucht der Browser automatisch, eine Backup-Datei (`favoriten-backup-YYYY-MM-DD.json`) herunterzuladen.
-  * *Hinweis:* Je nach Browser-Einstellung wird diese Datei eventuell blockiert oder im Download-Ordner gespeichert, ohne dass eine Rückfrage erscheint. Prüfen Sie bei wichtigen Änderungen stets Ihren Download-Ordner.
-* **Import:** Klicken Sie auf **Import Favoriten**, um eine zuvor exportierte JSON-Datei wiederherzustellen. Sie können wählen, ob die vorhandenen Daten ersetzt oder ergänzt werden sollen.
-
-## 7. Fehlerbehebung
-
-| Problem                            | Lösung                                                                                                                                                       |
-|:---------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Icons werden nicht angezeigt**   | Die Zielwebsite bietet kein Standard-Favicon an. Es wird automatisch ein graues Platzhalter-Symbol angezeigt.                                                |
-| **"Speicher ist voll" Meldung**    | Exportieren Sie sofort Ihre Daten. Löschen Sie alte, nicht mehr benötigte Links. Leeren Sie ggf. den Browser-Cache für andere Seiten.                        |
-| **Links nach Browser-Update weg**  | Wurde der Browser-Cache gelöscht? Importieren Sie die letzte Backup-Datei aus Ihrem Download-Ordner.                                                         |
-| **Drag & Drop funktioniert nicht** | Auf mobilen Geräten (Touchscreen) wird das native Drag & Drop oft nicht unterstützt. Nutzen Sie hier die Buttons zum Verschieben oder einen Desktop-Browser. |
-
-## 8. Technische Hinweise
-
-* **Kein Server:** Die Anwendung läuft vollständig clientseitig.
-* **Kompatibilität:** Erfordert einen modernen Browser mit Unterstützung für ES6 JavaScript, LocalStorage und HTML5 Dialogs.
-* **Sicherheit:** Beim Import werden URLs validiert. Gefährliche Protokolle (wie `javascript:`) werden blockiert.
+**Version 0.7 vom 06.05.2026 / © MD. 2026**
 
 ---
 
-*Entwickelt mit Fokus auf Datenschutz, Unabhängigkeit und lokale Datensouveränität.*
+## 1. Einleitung
+
+„Meine Favoriten" ist eine browserbasierte Web-App zur persönlichen Verwaltung von Links und Lesezeichen. Sie läuft vollständig im Browser, benötigt keine Installation und speichert alle Daten lokal auf dem eigenen Gerät – ohne Cloud, ohne Registrierung.
+
+Die App eignet sich besonders für Personen, die eine feste Sammlung an regelmäßig besuchten Webseiten, internen Tools oder lokalen Diensten übersichtlich und schnell zugänglich haben möchten.
+
+### 1.1 Systemvoraussetzungen
+
+- Moderner Webbrowser (Chrome, Brave, Edge, Firefox oder Safari)
+- Für volle PWA-Funktionalität: Aufruf über HTTP/HTTPS (nicht über `file://`)
+- JavaScript muss aktiviert sein
+
+### 1.2 Progressive Web App (PWA)
+
+Die App kann als Progressive Web App installiert werden. Dadurch erscheint sie wie eine native Desktop- oder Mobilanwendung – mit eigenem Fenster, ohne Browser-Adressleiste und mit Offline-Unterstützung.
+
+> **Tipp:** In Chrome oder Brave erscheint in der Adressleiste ein Install-Symbol (⊕). Ein Klick darauf installiert die App im Startmenü bzw. Launchpad.
+
+---
+
+## 2. Benutzeroberfläche
+
+Die App ist in folgende Bereiche gegliedert:
+
+| Bereich         | Beschreibung                                                            |
+| --------------- | ----------------------------------------------------------------------- |
+| Kopfbereich     | Titel und Untertitel der App                                            |
+| Eingabebereich  | Formular zum Hinzufügen neuer Favoriten sowie alle Aktionsschaltflächen |
+| Suchleiste      | Echtzeit-Suche über alle Favoriten                                      |
+| Statistik-Panel | Optionale Anzeige der Nutzungshäufigkeit (ein-/ausblendbar)             |
+| Kachelbereich   | Darstellung aller Favoriten gegliedert nach Kategorien                  |
+| Fußzeile        | Anzeige der App-Version                                                 |
+
+---
+
+## 3. Favoriten verwalten
+
+### 3.1 Neuen Favoriten hinzufügen
+
+Im oberen Eingabeformular stehen drei Felder zur Verfügung:
+
+- **Name** – die Bezeichnung, die auf der Kachel angezeigt wird
+- **URL** – die Webadresse des Favoriten (`https://` wird automatisch ergänzt, wenn kein Protokoll angegeben wird)
+- **Kategorie** – Zuordnung zu einer Gruppe; beim Eintippen werden vorhandene Kategorien als Vorschläge angezeigt
+
+Anschließend die Schaltfläche **„Hinzufügen"** klicken oder **Enter** drücken.
+
+> **Tipp:** Wird nur eine Kategorie eingetragen (Name und URL leer gelassen), wird eine leere Kategorie erstellt. Das ist nützlich, um Kategorien vorab anzulegen.
+
+### 3.2 Favorit bearbeiten
+
+Jede Kachel besitzt einen Bearbeiten-Button (**✏️**). Ein Klick darauf öffnet einen Dialog mit den aktuellen Werten. Dort können Name, URL und Kategorie geändert werden. Mit **„Speichern"** werden die Änderungen übernommen.
+
+> **Hinweis:** Beim Öffnen des Bearbeiten-Dialogs wird ein laufender Auto-Export-Timer gestoppt. Der Timer startet erst nach dem Speichern erneut.
+
+### 3.3 Favorit löschen
+
+Der Löschen-Button (**🗑️**) auf jeder Kachel entfernt den Eintrag nach einer Sicherheitsabfrage dauerhaft aus der Liste.
+
+### 3.4 Kategorie eines Favoriten ändern
+
+Über den Kategorie-Button (**🏷️**) auf jeder Kachel öffnet sich ein Kontextmenü mit allen verfügbaren Kategorien. Ein Klick auf eine Kategorie verschiebt den Favoriten sofort dorthin.
+
+### 3.5 Reihenfolge ändern (Drag & Drop)
+
+Jede Kachel besitzt einen Drag-Handle (**↔️**). Durch Halten und Ziehen kann die Reihenfolge der Kacheln innerhalb einer Kategorie beliebig verändert werden.
+
+> **Tipp:** Kacheln können auch an das Ende einer anderen Kategorie gezogen werden, indem sie auf den leeren Bereich unterhalb der Kacheln einer Kategorie abgelegt werden.
+
+---
+
+## 4. Kategorien
+
+### 4.1 Kategorien sortieren
+
+Über die Schaltfläche **„↕️ Kategorien sortieren"** öffnet sich ein Dialog, in dem die Reihenfolge der Kategorien angepasst werden kann:
+
+- **Drag & Drop:** Kategorien per Maus in die gewünschte Reihenfolge ziehen
+- **⇧** Ganz nach oben verschieben
+- **↑** Eine Position nach oben
+- **↓** Eine Position nach unten
+- **⇩** Ganz nach unten verschieben
+
+Mit **„Speichern"** wird die neue Reihenfolge übernommen, **„Abbrechen"** verwirft alle Änderungen.
+
+### 4.2 Kategorie löschen
+
+Im Kategoriekopf jeder Gruppe befindet sich ein Löschen-Button (**🗑️**). Eine Kategorie kann nur gelöscht werden, wenn sie keine Kacheln mehr enthält. Solange Einträge vorhanden sind, ist der Button deaktiviert.
+
+### 4.3 Automatische Kategorie „Am häufigsten besucht"
+
+Diese Kategorie wird automatisch angezeigt, sobald mindestens ein Favorit besucht wurde. Sie zeigt die bis zu 6 am häufigsten aufgerufenen Links und kann nicht manuell bearbeitet oder gelöscht werden.
+
+---
+
+## 5. Suche
+
+Die Suchleiste filtert die angezeigten Favoriten in Echtzeit. Die Suche durchsucht gleichzeitig:
+
+- Den Namen des Favoriten
+- Die URL
+- Die Kategorie
+
+Leere Kategorien werden bei aktiver Suche ausgeblendet. Gibt es keine Treffer, wird eine entsprechende Meldung angezeigt.
+
+> **Tipp:** Die Suchleiste wird beim Start der App automatisch fokussiert – direkt lostippen genügt.
+
+---
+
+## 6. Nutzungsstatistik
+
+Über **„📊 Statistik anzeigen"** wird ein Panel eingeblendet, das alle besuchten Favoriten absteigend nach Aufrufhäufigkeit auflistet. Die ersten drei Plätze werden mit Medaillen-Icons (🥇 🥈 🥉) hervorgehoben.
+
+Ein Klick auf **„📊 Statistik ausblenden"** schließt das Panel wieder. Der Button ist deaktiviert, solange noch kein Favorit besucht wurde.
+
+> **Hinweis:** Die Besuchszähler werden lokal gespeichert und beim Bereinigen nicht gelöscht, solange der zugehörige Favorit noch existiert.
+
+---
+
+## 7. Export und Import
+
+### 7.1 Manueller Export
+
+Ein Klick auf **„⬇️ Export Favoriten"** lädt eine JSON-Datei mit dem Namen `favoriten-links.json` herunter. Diese enthält alle Favoriten sowie die gespeicherte Kategorienreihenfolge.
+
+### 7.2 Auto-Export
+
+Die App verfügt über einen automatischen Export-Mechanismus: Nach jeder Änderung (Hinzufügen, Bearbeiten, Löschen, Verschieben) startet ein 5-Sekunden-Timer. Läuft dieser ab, ohne dass weitere Änderungen vorgenommen wurden, wird automatisch eine Sicherungsdatei heruntergeladen.
+
+Der Dateiname des Auto-Exports enthält Datum, Uhrzeit und die ersten drei Kategorienamen, zum Beispiel:
+
+```
+favoriten-links-backup-20260506-143022-Nachrichten_Wissen_Tools.json
+```
+
+> **Hinweis:** Der Auto-Export kann durch einen Toggle-Schalter dauerhaft deaktiviert werden. Die Einstellung wird beim nächsten Start der App beibehalten.
+
+### 7.3 Export beim Verlassen
+
+Wenn die App mit ungespeicherten Änderungen geschlossen wird und kein Auto-Export stattgefunden hat, wird beim Verlassen automatisch ein Export-Download ausgelöst. Der Browser zeigt dabei eine Bestätigungsmeldung an.
+
+### 7.4 Import
+
+Über **„⬆️ Import Favoriten"** kann eine zuvor exportierte JSON-Datei wieder eingelesen werden. Nach Auswahl der Datei erscheint eine Abfrage:
+
+- **Ersetzen:** Alle bestehenden Favoriten werden durch die importierten ersetzt.
+- **Zusammenführen:** Importierte Favoriten werden mit bestehenden zusammengeführt. Duplikate (gleiche ID) werden durch die importierte Version überschrieben.
+
+> **Hinweis:** Beim Import werden ungültige Einträge (fehlende Pflichtfelder, ungültige URLs) automatisch herausgefiltert.
+
+---
+
+## 8. Schaltflächen-Übersicht
+
+| Schaltfläche            | Funktion                                                     |
+| ----------------------- | ------------------------------------------------------------ |
+| Hinzufügen              | Neuen Favoriten mit den eingegebenen Daten speichern         |
+| ↕️ Kategorien sortieren | Dialog zum Umsortieren der Kategorienreihenfolge öffnen      |
+| ⬇️ Export Favoriten     | Alle Favoriten als JSON-Datei herunterladen                  |
+| ⬆️ Import Favoriten     | JSON-Datei mit Favoriten importieren                         |
+| 📊 Statistik anzeigen   | Nutzungsstatistik ein- oder ausblenden                       |
+| ❓ Hilfe                 | Diese Bedienungsanleitung öffnen                             |
+| ✏️ (Kachel)             | Bearbeiten-Dialog für diesen Favoriten öffnen                |
+| 🗑️ (Kachel)            | Diesen Favoriten nach Bestätigung löschen                    |
+| 🏷️ (Kachel)            | Kategorie dieses Favoriten ändern                            |
+| ↔️ (Kachel)             | Kachel per Drag & Drop verschieben                           |
+| 🗑️ (Kategorie)         | Leere Kategorie löschen (nur aktiv wenn keine Kacheln darin) |
+
+---
+
+## 9. Datenspeicherung
+
+Alle Daten werden ausschließlich im lokalen Speicher des Browsers (`localStorage`) gespeichert. Es findet keine Übertragung an externe Server statt.
+
+Folgende Daten werden gespeichert:
+
+- Favoritenliste (Name, URL, Kategorie)
+- Kategorienreihenfolge
+- Besuchszähler je Favorit
+- Einstellung des Auto-Exports (ein/aus)
+
+> **Wichtig:** Beim Löschen des Browser-Caches oder der Website-Daten gehen alle gespeicherten Favoriten verloren. Regelmäßiger Export wird empfohlen.
+
+### 9.1 Speicherlimit
+
+Der `localStorage`-Speicher ist browserseitig begrenzt (typischerweise 5–10 MB). Wird das Limit erreicht, erscheint eine Warnung mit der Aufforderung, sofort einen Export durchzuführen und alte Einträge zu löschen.
+
+---
+
+## 10. Häufige Fragen & Fehlerbehebung
+
+| Problem                                          | Lösung                                                                                                                                   |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| App lädt nicht als PWA                           | Die App muss über HTTP/HTTPS aufgerufen werden, nicht über `file://`. Lokalen Webserver starten, z. B. `python3 -m http.server 8080`.    |
+| Favicons werden nicht angezeigt                  | Einige Seiten bieten kein `favicon.ico` an. Ein Globus-Symbol wird als Platzhalter angezeigt.                                            |
+| Keine Favicons bei lokalen Geräten (192.168.x.x) | Wird die App über HTTPS aufgerufen, können HTTP-Adressen aus Sicherheitsgründen keine Favicons laden. Das ist normales Browserverhalten. |
+| Auto-Export lädt keine Datei herunter            | Prüfen, ob der Browser automatische Downloads erlaubt. Ggf. in den Browser-Einstellungen freigeben.                                      |
+| Daten nach Browser-Update weg                    | Daten im `localStorage` können beim Löschen von Browserdaten verloren gehen. Regelmäßig exportieren!                                     |
+| Import-Datei wird nicht erkannt                  | Nur JSON-Dateien werden akzeptiert, die über den Export-Button dieser App erstellt wurden.                                               |
