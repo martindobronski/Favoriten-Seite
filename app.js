@@ -18,7 +18,7 @@ let autoExportEnabled = true;
 let autoExportSuppressed = true;
 let suppressAutoExportOnce = false;
 let exportDebounceTimer = null;
-const EXPORT_DEBOUNCE_MS = 5000;
+const EXPORT_DEBOUNCE_MS = 5000; // 10 Sekunden bis Export nach Änderung
 // Track if an auto-export has already been performed since the last change
 let autoExportTriggeredSinceLastChange = false;
 
@@ -43,8 +43,17 @@ function buildBackupFilename() {
 function scheduleAutoExport() {
   if (!autoExportEnabled || autoExportSuppressed || suppressAutoExportOnce) return;
 
-  if (exportDebounceTimer) clearTimeout(exportDebounceTimer);
-  exportDebounceTimer = setTimeout(exportCurrentState, EXPORT_DEBOUNCE_MS);
+  // 👉 Jede Änderung = neuer Debounce-Zyklus
+  autoExportTriggeredSinceLastChange = false;
+
+  // 👉 Timer IMMER neu starten
+  if (exportDebounceTimer) {
+    clearTimeout(exportDebounceTimer);
+  }
+
+  exportDebounceTimer = setTimeout(() => {
+    exportCurrentState();
+  }, EXPORT_DEBOUNCE_MS);
 }
 
 function exportCurrentState() {
@@ -54,18 +63,28 @@ function exportCurrentState() {
       categoryOrder,
       links
     };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json"
+    });
+
     const url = URL.createObjectURL(blob);
+
     const anchor = document.createElement("a");
     anchor.href = url;
     anchor.download = buildBackupFilename();
     anchor.click();
+
     URL.revokeObjectURL(url);
+
+    // 👉 Merken: Export wurde ausgeführt
     autoExportTriggeredSinceLastChange = true;
+
   } catch (e) {
     console.error("Auto-export fehlgeschlagen:", e);
   }
 }
+
 const sortCategoriesBtn = document.getElementById("sortCategoriesBtn");
 const toggleStatsBtn = document.getElementById("toggleStatsBtn");
 const sortCategoriesDialog = document.getElementById("sortCategoriesDialog");
@@ -402,6 +421,12 @@ function openEditDialog(linkId) {
     const link = links.find(item => item.id === linkId);
     if (!link) return;
 
+    // 👉 Laufenden Export-Timer stoppen – neu starten erst nach dem Speichern
+    if (exportDebounceTimer) {
+        clearTimeout(exportDebounceTimer);
+        exportDebounceTimer = null;
+    }
+
     editingLinkId = linkId;
     editTitleInput.value = link.title;
     editUrlInput.value = link.url;
@@ -632,6 +657,11 @@ function createTile(link, options = {}) {
         try {
             const urlObj = new URL(link.url);
             const domain = urlObj.origin;
+
+            // Mixed Content vermeiden: HTTP-Favicon auf HTTPS-Seite nicht laden
+            if (location.protocol === 'https:' && urlObj.protocol === 'http:') {
+               throw new Error('Mixed Content');
+            }
 
             favicon.src = `${domain}/favicon.ico`;
 
@@ -966,6 +996,7 @@ function update() {
 }
 
 function render() {
+    if (!tilesContainer) return;
     tilesContainer.innerHTML = "";
 
     if (!links.length && !categoryOrder.length) {
@@ -1144,6 +1175,10 @@ exportBtn.addEventListener("click", () => {
 
     URL.revokeObjectURL(url);
     hasChanges = false;
+
+     // 👉 danach Debounce-Zyklus neu starten
+    scheduleAutoExport();
+
 });
 
 importBtn.addEventListener("click", () => {
@@ -1267,6 +1302,7 @@ editForm.addEventListener("submit", event => {
     update();
     editDialog.close();
     editingLinkId = null;
+    scheduleAutoExport();
 });
 
 editCancelBtn.addEventListener("click", () => {
