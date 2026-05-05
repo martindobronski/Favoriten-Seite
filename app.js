@@ -14,7 +14,7 @@ const exportBtn = document.getElementById("exportBtn");
 const importBtn = document.getElementById("importBtn");
 const importFileInput = document.getElementById("importFileInput");
 const sortCategoriesBtn = document.getElementById("sortCategoriesBtn");
-const toggleStatsBtn = document.getElementById("toggleStatsBtn"); // NEU: Statistik Button
+const toggleStatsBtn = document.getElementById("toggleStatsBtn");
 const sortCategoriesDialog = document.getElementById("sortCategoriesDialog");
 const sortCategoriesForm = document.getElementById("sortCategoriesForm");
 const sortCategoriesList = document.getElementById("sortCategoriesList");
@@ -48,7 +48,7 @@ let editingLinkId = null;
 let pendingCategoryOrder = [];
 let searchQuery = "";
 let hasChanges = false;
-let statsVisible = false; // NEU: Status der Statistik-Ansicht
+let statsVisible = false;
 
 // ── SICHERE SPEICHERFUNKTION ──────────────────────────────────────────────────
 
@@ -972,7 +972,6 @@ hasChanges = false;
 
 // ── EVENT LISTENERS ──────────────────────────────────────────────────────────
 
-// NEU: Statistik Toggle Button Logik
 if (toggleStatsBtn) {
     toggleStatsBtn.addEventListener("click", () => {
         statsVisible = !statsVisible;
@@ -1034,7 +1033,7 @@ linkForm.addEventListener("submit", event => {
         return;
     }
 
-    links.unshift({
+    links.push({
         id: crypto.randomUUID(),
         title,
         url,
@@ -1121,16 +1120,32 @@ importFileInput.addEventListener("change", async event => {
                 categoryOrder = importedCategoryOrder;
                 saveCategoryOrder(categoryOrder);
             }
-        } else {
-            setLinks([...importedLinks, ...links]);
-            if (importedCategoryOrder.length) {
-                const newCategories = importedCategoryOrder.filter(c => !categoryOrder.includes(c));
-                if (newCategories.length) {
-                    categoryOrder = [...newCategories, ...categoryOrder];
-                    saveCategoryOrder(categoryOrder);
-                }
+    } else {
+        // Merge imported links with existing ones safely:
+        // 1) Remove potential duplicates by id by keeping imported entries first
+        // 2) If a duplicate id exists in existing links, the imported version overwrites it
+        // 3) Keep existing links that are not present in the import
+        // Also ensure imported links have unique ids within themselves
+        const importedUnique = [];
+        const seenIds = new Set();
+        for (const l of importedLinks) {
+            if (!l || !l.id) continue;
+            if (seenIds.has(l.id)) continue;
+            seenIds.add(l.id);
+            importedUnique.push({ ...l });
+        }
+
+        const existingNonDuplicates = links.filter(l => !importedUnique.find(il => il.id === l.id));
+        const mergedLinks = [...importedUnique, ...existingNonDuplicates];
+        setLinks(mergedLinks);
+        if (importedCategoryOrder.length) {
+            const newCategories = importedCategoryOrder.filter(c => !categoryOrder.includes(c));
+            if (newCategories.length) {
+                categoryOrder = [...newCategories, ...categoryOrder];
+                saveCategoryOrder(categoryOrder);
             }
         }
+    }
 
         update();
     } catch {
@@ -1222,4 +1237,3 @@ window.addEventListener('beforeunload', (event) => {
 
     return event.returnValue;
 });
-
