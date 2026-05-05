@@ -14,6 +14,7 @@ const exportBtn = document.getElementById("exportBtn");
 const importBtn = document.getElementById("importBtn");
 const importFileInput = document.getElementById("importFileInput");
 const sortCategoriesBtn = document.getElementById("sortCategoriesBtn");
+const toggleStatsBtn = document.getElementById("toggleStatsBtn"); // NEU: Statistik Button
 const sortCategoriesDialog = document.getElementById("sortCategoriesDialog");
 const sortCategoriesForm = document.getElementById("sortCategoriesForm");
 const sortCategoriesList = document.getElementById("sortCategoriesList");
@@ -47,6 +48,7 @@ let editingLinkId = null;
 let pendingCategoryOrder = [];
 let searchQuery = "";
 let hasChanges = false;
+let statsVisible = false; // NEU: Status der Statistik-Ansicht
 
 // ── SICHERE SPEICHERFUNKTION ──────────────────────────────────────────────────
 
@@ -98,21 +100,12 @@ function normalizeUrl(rawUrl) {
     const value = rawUrl.trim();
     if (!value) return "";
 
-    // Korrigierter regulärer Ausdruck:
-    // ^            - Am Anfang der Zeichenkette
-    // [a-zA-Z]+    - Mindestens ein Buchstabe (für das Protokoll, z.B. "http" oder "msteams")
-    // :            - Direkt gefolgt von einem Doppelpunkt
     const protocolRegex = /^[a-zA-Z]+:/;
 
-    // Prüfen, ob die URL mit einem beliebigen Protokoll beginnt.
     if (protocolRegex.test(value)) {
-        // Wenn ja, die URL unverändert zurückgeben.
-        // Das funktioniert für "https://example.com", "msteams:chat", "obsidian://open" etc.
         return value;
     }
 
-    // Wenn kein Protokoll gefunden wurde, "https://" voranstellen.
-    // Das funktioniert für "example.com" -> "https://example.com"
     return "https://" + value;
 }
 
@@ -169,7 +162,7 @@ function loadCategoryOrder() {
 function saveCategoryOrder(order) {
     const jsonData = JSON.stringify(order);
     safeLocalStorageSetItem(CATEGORY_ORDER_KEY, jsonData);
-    hasChanges = true; // NEU: Änderung markieren
+    hasChanges = true;
 }
 
 // ── STORAGE: VISIT COUNTS ────────────────────────────────────────────────────
@@ -569,33 +562,22 @@ function createTile(link, options = {}) {
     favicon.alt = "";
     favicon.setAttribute("aria-hidden", "true");
 
-    // Standard-Placeholder als Fallback (ein neutrales grau)
-    // Wir setzen dies erst am Ende, wenn alles andere fehlschlägt
-    const fallbackShown = false;
-
     if (/^https?:\/\//i.test(link.url)) {
         try {
             const urlObj = new URL(link.url);
-            const domain = urlObj.origin; // Basiert auf Origin (z.B. https://example.com)
+            const domain = urlObj.origin;
 
-            // Wir versuchen das Standard-Favicon der Domain zu laden
-            // Viele Seiten haben dies unter /favicon.ico
             favicon.src = `${domain}/favicon.ico`;
 
-            // Wenn das Bild nicht lädt (404 oder Fehler), nutzen wir ein neutrales SVG als Platzhalter
             favicon.addEventListener("error", () => {
-                // Ein neutrales, lokales SVG als Data-URI (kein externer Request mehr)
-                // Ein einfaches "Weltkugel"-Symbol in Grau
                 favicon.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='2' y1='12' x2='22' y2='12'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/%3E%3C/svg%3E";
-                favicon.style.opacity = "0.6"; // Etwas abgedunkelt um zu zeigen, dass es ein Fallback ist
+                favicon.style.opacity = "0.6";
             });
         } catch {
-            // Wenn die URL ungültig ist, sofort das Fallback
             favicon.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='2' y1='12' x2='22' y2='12'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/%3E%3C/svg%3E";
             favicon.style.opacity = "0.6";
         }
     } else {
-        // Bei nicht-HTTP Links (z.B. obsidian://) sofort das Fallback
         favicon.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='2' y1='12' x2='22' y2='12'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/%3E%3C/svg%3E";
         favicon.style.opacity = "0.6";
     }
@@ -813,11 +795,107 @@ function renderCategorySection(category, items, options = {}) {
     tilesContainer.append(section);
 }
 
+// ── TOP STATISTIK RENDERER (ANGEPASST: ALLE EINTRÄGE & TOGGLE) ───────────────
+
+function renderTopStats() {
+    // 1. Daten vorbereiten: Alle Links mit ihren Counts holen
+    const stats = links
+        .map(link => ({
+            ...link,
+            count: visitCounts[link.id] || 0
+        }))
+        .filter(item => item.count > 0) // Nur besuchte Links
+        .sort((a, b) => b.count - a.count); // Absteigend sortieren
+
+    // Container im DOM finden oder erstellen
+    let statsContainer = document.getElementById("topStatsContainer");
+
+    // Wenn keine Stats da sind und Container existiert -> entfernen
+    if (stats.length === 0) {
+        if (statsContainer) statsContainer.remove();
+        if(toggleStatsBtn) {
+            toggleStatsBtn.textContent = "📊 Statistik anzeigen";
+            toggleStatsBtn.disabled = true;
+            toggleStatsBtn.title = "Keine besuchten Links vorhanden";
+        }
+        statsVisible = false; // Reset status
+        return;
+    }
+
+    // Button aktivieren, wenn Daten da sind
+    if(toggleStatsBtn) {
+        toggleStatsBtn.disabled = false;
+        toggleStatsBtn.title = "Statistik ein- oder ausblenden";
+        // Text nur aktualisieren, wenn er nicht schon korrekt ist
+        const expectedText = statsVisible ? "📊 Statistik ausblenden" : "📊 Statistik anzeigen";
+        if (toggleStatsBtn.textContent !== expectedText) {
+            toggleStatsBtn.textContent = expectedText;
+        }
+    }
+
+    if (!statsContainer) {
+        statsContainer = document.createElement("section");
+        statsContainer.id = "topStatsContainer";
+        statsContainer.className = "panel top-stats-panel";
+        // Standardmäßig ausblenden, wenn neu erstellt
+        statsContainer.style.display = statsVisible ? "block" : "none";
+        // Einfügen VOR dem tilesContainer
+        tilesContainer.parentElement.insertBefore(statsContainer, tilesContainer);
+    }
+
+    // Sichtbarkeit synchronisieren
+    statsContainer.style.display = statsVisible ? "block" : "none";
+
+    // Wenn ausgeblendet, müssen wir den Inhalt nicht neu bauen (Performance)
+    if (!statsVisible) return;
+
+    // Maximalwert für die Balkenberechnung
+    const maxCount = stats[0].count;
+
+    // HTML bauen - JETZT ALLE EINTRÄGE (kein .slice())
+    let html = `
+        <div class="stats-header">
+            <h2>📊 Vollständige Nutzungsstatistik</h2>
+            <span class="stats-subtitle">Sortiert nach Aufrufen (Gesamt: ${stats.length} besuchte Seiten)</span>
+        </div>
+        <div class="stats-list">
+    `;
+
+    stats.forEach((item, index) => {
+        const rank = index + 1;
+        const percentage = (item.count / maxCount) * 100;
+
+        // Besondere Klassen für die Top 3
+        let rankClass = "";
+        let icon = "🔹";
+        if (rank === 1) { rankClass = "rank-1"; icon = "🥇"; }
+        if (rank === 2) { rankClass = "rank-2"; icon = "🥈"; }
+        if (rank === 3) { rankClass = "rank-3"; icon = "🥉"; }
+
+        html += `
+            <div class="stat-row ${rankClass}">
+                <div class="stat-rank">${icon} <span>${rank}</span></div>
+                <div class="stat-bar-container">
+                    <div class="stat-bar-fill" style="width: ${percentage}%"></div>
+                    <div class="stat-info">
+                        <span class="stat-title">${item.title}</span>
+                        <span class="stat-count">${item.count} Aufrufe</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    html += `</div>`;
+    statsContainer.innerHTML = html;
+}
+
 // ── STATE UPDATE & RENDER ────────────────────────────────────────────────────
 
 function update() {
     syncCategoryOrder();
     pruneVisitCounts();
+    renderTopStats();
     render();
 }
 
@@ -894,6 +972,26 @@ hasChanges = false;
 
 // ── EVENT LISTENERS ──────────────────────────────────────────────────────────
 
+// NEU: Statistik Toggle Button Logik
+if (toggleStatsBtn) {
+    toggleStatsBtn.addEventListener("click", () => {
+        statsVisible = !statsVisible;
+        const statsContainer = document.getElementById("topStatsContainer");
+
+        if (statsContainer) {
+            statsContainer.style.display = statsVisible ? "block" : "none";
+        }
+
+        // Button Text aktualisieren
+        toggleStatsBtn.textContent = statsVisible ? "📊 Statistik ausblenden" : "📊 Statistik anzeigen";
+
+        // Wenn eingeblendet, sicherstellen, dass Daten aktuell gerendert werden
+        if (statsVisible) {
+            renderTopStats();
+        }
+    });
+}
+
 document.addEventListener("click", event => {
     if (!activeCategoryMenu) return;
     if (event.target.closest(".category-menu") || event.target.closest(".change-category-btn")) return;
@@ -943,7 +1041,7 @@ linkForm.addEventListener("submit", event => {
         category
     });
     saveLinks(links);
-    hasChanges = true; // NEU: Änderung markieren
+    hasChanges = true;
 
     if (!categoryOrder.includes(category)) {
         categoryOrder.unshift(category);
@@ -971,7 +1069,6 @@ exportBtn.addEventListener("click", () => {
     anchor.click();
 
     URL.revokeObjectURL(url);
-    // Nach manuellem Export können wir das Flag zurücksetzen, da gesichert
     hasChanges = false;
 });
 
@@ -1090,18 +1187,12 @@ editCancelBtn.addEventListener("click", () => {
 // ── AUTO-EXPORT BEIM VERLASSEN (OPTIMIERT) ─────────────────────────────────
 
 window.addEventListener('beforeunload', (event) => {
-    // Wenn keine Änderungen vorliegen, einfach verlassen ohne Rückfrage
     if (!hasChanges) {
         return;
     }
 
-    // 1. Flag sofort zurücksetzen, um Doppel-Warnungen zu vermeiden.
-    // Selbst wenn der Download blockiert wird, wollen wir den Nutzer nicht
-    // mit einer zusätzlichen "Ungespeicherte Änderungen"-Warnung belästigen,
-    // da wir es zumindest versucht haben.
     hasChanges = false;
 
-    // 2. Versuch: Automatischen Export auslösen
     try {
         const payload = {
             exportedAt: new Date().toISOString(),
@@ -1115,30 +1206,20 @@ window.addEventListener('beforeunload', (event) => {
 
         const anchor = document.createElement("a");
         anchor.href = url;
-        anchor.download = `favoriten-backup-${new Date().toISOString().slice(0,10)}.json`;
 
-        // Simulierter Klick
         document.body.appendChild(anchor);
         anchor.click();
         document.body.removeChild(anchor);
 
-        // URL freigeben (kann asynchron passieren, da Tab ggf. schließt)
         setTimeout(() => URL.revokeObjectURL(url), 100);
-
-        // Hinweis: Wenn dieser Punkt erreicht wird, wurde der Download vom Browser akzeptiert.
-        // Da hasChanges bereits false ist, wird keine weitere Browser-Warnung angezeigt.
 
     } catch (e) {
         console.error("Auto-Export fehlgeschlagen:", e);
-        // Wir setzen hasChanges nicht wieder auf true, um den Nutzer nicht zu blockieren.
-        // Der Fehler wird nur im Console-Log festgehalten.
     }
 
-    // 3. Sicherheitsnetz: Browser-Warnung anzeigen (falls der Download komplett scheitert)
-    // Da hasChanges aber schon false ist, interpretieren moderne Browser dies oft als "OK zum Schließen".
-    // Diese Zeile dient als letzter Fallback für sehr alte Browser oder spezifische Einstellungen.
     event.preventDefault();
     event.returnValue = 'Ein automatischer Backup-Export wurde versucht. Bitte prüfen Sie Ihren Download-Ordner.';
 
     return event.returnValue;
 });
+

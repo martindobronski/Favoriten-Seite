@@ -25,7 +25,9 @@
         <button id="sortCategoriesBtn" type="button" class="secondary-btn">Kategorien sortieren</button>
         <button id="exportBtn" type="button" class="secondary-btn">Export Favoriten</button>
         <button id="importBtn" type="button" class="secondary-btn">Import Favoriten</button>
-        <a class="secondary-btn help-btn" href="./BEDIENUNGSANLEITUNG.pdf" target="_blank" rel="noopener noreferrer">Hilfe</a>
+        <!-- NEUE POSITION: Statistik direkt vor Hilfe -->
+        <button id="toggleStatsBtn" type="button" class="secondary-btn">📊 Statistik anzeigen</button>
+        <a class="secondary-btn help-btn" href="./BEDIENUNGSANLEITUNG.md" target="_blank" rel="noopener noreferrer">Hilfe</a>
         <input id="importFileInput" type="file" accept="application/json,.json" hidden>
       </div>
     </section>
@@ -37,7 +39,7 @@
     <section id="tilesContainer" aria-live="polite"></section>
 
     <footer class="app-version" aria-label="Programmversion">
-      Version 0.6 vom 05.05.2026 / &copy; MD. 2026
+      Version 0.4 / &copy; MD. 2026
     </footer>
   </main>
 
@@ -67,7 +69,6 @@
 
   <script src="./app.js"></script>
 
-  <!-- Setzt den Fokus beim Laden der Seite auf das Suchfeld -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const searchInput = document.getElementById('searchInput');

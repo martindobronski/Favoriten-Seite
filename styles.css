@@ -41,8 +41,6 @@ main {
 h1 {
   margin-top: 0;
   font-size: clamp(1.6rem, 1.3rem + 1.5vw, 2.3rem);
-  /* Fügen Sie dies zu Ihrer CSS-Regel für die Überschrift hinzu */
-  /* Weicher Leuchteffekt für dunkle Hintergründe */
   text-shadow: 0 0 4px rgba(255, 255, 255, 0.7);
 }
 
@@ -298,7 +296,6 @@ button:hover {
   padding: 0.45rem 0.6rem 0;
 }
 
-/* Title row: favicon + title text side by side */
 .tile-title-row {
   display: flex;
   align-items: center;
@@ -306,30 +303,19 @@ button:hover {
   margin-bottom: 0.45rem;
 }
 
-/*
 .tile-favicon {
   width: 20px;
   height: 20px;
   flex-shrink: 0;
-  border-radius: 3px;
+  border-radius: 4px;
   object-fit: contain;
-}
-*/
-
-.tile-favicon {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-  border-radius: 4px; /* Etwas weicher als 3px */
-  object-fit: contain;
-  background-color: rgba(96, 112, 128, 0.1); /* Sanfter Hintergrund für transparente Icons */
-  transition: opacity 0.2s ease; /* Weicher Übergang beim Laden/Fallback */
+  background-color: rgba(96, 112, 128, 0.1);
+  transition: opacity 0.2s ease;
 }
 
 .tile-title {
   font-weight: 700;
   word-break: break-word;
-  /* margin-bottom handled by .tile-title-row now */
 }
 
 .tile-url {
@@ -348,14 +334,12 @@ button:hover {
   padding: 0 0.65rem 0.65rem;
 }
 
-/* Left spacer – holds the visit badge (if any), takes remaining space */
 .tile-actions-spacer {
   flex: 1;
   display: flex;
   align-items: center;
 }
 
-/* Visit count badge */
 .visit-badge {
   display: inline-flex;
   align-items: center;
@@ -774,10 +758,160 @@ button:hover {
   text-align: center;
 }
 
+/* ── Top Statistik Panel (NEU) ──────────────────────────── */
+
+.top-stats-panel {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--tile-shadow);
+  margin-bottom: 2rem;
+  border: 1px solid rgba(37, 99, 235, 0.1);
+}
+
+.stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1.2rem;
+  border-bottom: 2px solid rgba(37, 99, 235, 0.1);
+  padding-bottom: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.stats-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: var(--text);
+}
+
+.stats-subtitle {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.stat-row:hover {
+  background: rgba(37, 99, 235, 0.05);
+}
+
+/* Top 3 Highlights */
+.stat-row.rank-1 {
+  background: rgba(255, 215, 0, 0.15);
+  border-left: 4px solid #FFD700;
+}
+.stat-row.rank-2 {
+  background: rgba(192, 192, 192, 0.15);
+  border-left: 4px solid #C0C0C0;
+}
+.stat-row.rank-3 {
+  background: rgba(205, 127, 50, 0.15);
+  border-left: 4px solid #CD7F32;
+}
+
+.stat-rank {
+  font-weight: 700;
+  font-size: 1.2rem;
+  width: 2.5rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.stat-bar-container {
+  flex: 1;
+  position: relative;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  background: rgba(0,0,0,0.03);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.stat-bar-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, rgba(37, 99, 235, 0.2), var(--primary));
+  z-index: 1;
+  transition: width 0.5s ease-out;
+}
+
+.stat-info {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 0.8rem;
+  font-size: 0.95rem;
+}
+
+.stat-title {
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60%;
+}
+
+.stat-count {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 0.85rem;
+  background: rgba(255,255,255,0.6);
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* Dark Mode Anpassung für die Statistik */
+@media (prefers-color-scheme: dark) {
+  .stat-bar-container {
+    background: rgba(255,255,255,0.05);
+  }
+  .stat-info {
+    color: #f3f4f6;
+  }
+  .stat-count {
+    background: rgba(0,0,0,0.4);
+    color: #60a5fa;
+  }
+  .stat-row:hover {
+    background: rgba(37, 99, 235, 0.15);
+  }
+}
+
 /* ── Responsive ─────────────────────────────────────────── */
 
 @media (max-width: 720px) {
   form {
     grid-template-columns: 1fr;
+  }
+
+  .stats-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .stat-title {
+    max-width: 50%;
   }
 }
