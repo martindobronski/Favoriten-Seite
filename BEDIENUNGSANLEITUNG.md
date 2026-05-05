@@ -82,7 +82,7 @@ Alle Daten werden im `localStorage` Ihres Browsers gespeichert.
 ### Export & Import
 
 * **Manueller Export:** Klicken Sie auf **Export Favoriten**, um eine JSON-Sicherungsdatei herunterzuladen.
-* **Automatischer Backup-Export (Neu in v0.3):** Wenn Sie die Seite schließen, während Sie Änderungen vorgenommen haben (neue Links, gelöschte Kategorien etc.), versucht der Browser automatisch, eine Backup-Datei (`favoriten-backup-YYYY-MM-DD.json`) herunterzuladen.
+* **Automatischer Backup-Export:** Wenn Sie die Seite schließen, während Sie Änderungen vorgenommen haben (neue Links, gelöschte Kategorien etc.), versucht der Browser automatisch, eine Backup-Datei (`favoriten-backup-YYYY-MM-DD.json`) herunterzuladen.
   * *Hinweis:* Je nach Browser-Einstellung wird diese Datei eventuell blockiert oder im Download-Ordner gespeichert, ohne dass eine Rückfrage erscheint. Prüfen Sie bei wichtigen Änderungen stets Ihren Download-Ordner.
 * **Import:** Klicken Sie auf **Import Favoriten**, um eine zuvor exportierte JSON-Datei wiederherzustellen. Sie können wählen, ob die vorhandenen Daten ersetzt oder ergänzt werden sollen.
 
