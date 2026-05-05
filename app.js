@@ -21,7 +21,7 @@ let autoExportEnabled = storedAutoExport === null ? true : storedAutoExport === 
 let autoExportSuppressed = true;
 let suppressAutoExportOnce = false;
 let exportDebounceTimer = null;
-const EXPORT_DEBOUNCE_MS = 5000; // 10 Sekunden bis Export nach Änderung
+const EXPORT_DEBOUNCE_MS = 5000; // 5 Sekunden bis Export nach Änderung
 // Track if an auto-export has already been performed since the last change
 let autoExportTriggeredSinceLastChange = false;
 
