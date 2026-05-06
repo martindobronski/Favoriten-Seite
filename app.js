@@ -414,6 +414,49 @@ function moveLinkToCategoryEnd(fromId, targetCategory) {
     update();
 }
 
+// ── CATEGORY RENAMING ─────────────────────────────────────────────────────────
+function renameCategory(oldCategory, newCategory) {
+    const oldCat = normalizeCategory(oldCategory);
+    const newCat = normalizeCategory(newCategory);
+    if (!newCat || oldCat === newCat) return;
+    if (oldCat === MOST_VISITED_CATEGORY) return;
+
+    // Update all links
+    let changed = false;
+    links = links.map(link => {
+        const current = normalizeCategory(link.category);
+        if (current === oldCat) {
+            changed = true;
+            return { ...link, category: newCat };
+        }
+        return link;
+    });
+
+    if (!changed) return;
+
+    // Preserve position of the renamed category in the order
+    const oldIndex = categoryOrder.findIndex(c => normalizeCategory(c) === oldCat);
+    if (oldIndex >= 0) {
+        // Replace at the same position
+        categoryOrder[oldIndex] = newCat;
+    } else {
+        // If it wasn't in the order before, ensure the new category appears somewhere
+        if (!categoryOrder.includes(newCat)) {
+            categoryOrder.push(newCat);
+        }
+    }
+
+    // Remove oldCat if unused
+    const stillUsedOld = links.some(l => normalizeCategory(l.category) === oldCat);
+    if (!stillUsedOld) {
+        categoryOrder = categoryOrder.filter(c => c !== oldCat);
+    }
+
+    saveLinks(links);
+    saveCategoryOrder(categoryOrder);
+    update();
+}
+
 function reassignLinkCategory(linkId, nextCategory) {
     const normalizedCategory = normalizeCategory(nextCategory);
     const link = links.find(item => item.id === linkId);
@@ -857,6 +900,27 @@ function renderCategorySection(category, items, options = {}) {
     header.append(heading);
 
     if (!isAutomatic) {
+        // Rename category button (left of delete)
+        const renameCategoryBtn = document.createElement("button");
+        // Reuse delete button styling for background color consistency
+        renameCategoryBtn.className = "rename-category-btn delete-category-btn";
+        renameCategoryBtn.type = "button";
+        renameCategoryBtn.textContent = "✏️";
+        renameCategoryBtn.title = "Kategorie umbenennen";
+        renameCategoryBtn.addEventListener("click", event => {
+            event.preventDefault();
+            event.stopPropagation();
+            const newName = prompt(`Kategorie "${category}" umbenennen zu:`, category);
+            if (newName === null) return;
+            const trimmed = newName.trim();
+            if (!trimmed) {
+                alert("Die Kategoriename darf nicht leer sein.");
+                return;
+            }
+            if (normalizeCategory(trimmed) === normalizeCategory(category)) return;
+            renameCategory(category, trimmed);
+        });
+
         const deleteCategoryBtn = document.createElement("button");
         deleteCategoryBtn.className = "delete-category-btn";
         deleteCategoryBtn.type = "button";
@@ -871,7 +935,8 @@ function renderCategorySection(category, items, options = {}) {
 
         const categoryHeaderActions = document.createElement("div");
         categoryHeaderActions.className = "category-header-actions";
-        categoryHeaderActions.append(deleteCategoryBtn);
+        // left to right: Rename | Delete
+        categoryHeaderActions.append(renameCategoryBtn, deleteCategoryBtn);
         header.append(categoryHeaderActions);
     }
 
