@@ -826,7 +826,10 @@ function createTile(link, options = {}) {
 // ── CATEGORY-SUGGESTIONS DATALIST ────────────────────────────────────────────
 
 function renderCategorySuggestions() {
-    const categories = [...categoryOrder];
+    const categories = [...categoryOrder].sort((a, b) =>
+        a.localeCompare(b, "de", { sensitivity: "base" })  // 👈 neu
+    );
+
     categorySuggestions.innerHTML = "";
     categories.forEach(category => {
         const option = document.createElement("option");
