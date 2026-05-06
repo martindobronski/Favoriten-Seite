@@ -740,7 +740,7 @@ function createTile(link, options = {}) {
     dragHandle.className = "drag-handle";
     dragHandle.type = "button";
     dragHandle.textContent = "↔️";
-    dragHandle.title = "Reihenfolge ändern";
+    dragHandle.title = "Reihenfolge verschieben";
     dragHandle.draggable = true;
 
     const isCustomScheme = !/^https?:\/\//i.test(link.url);
@@ -1355,24 +1355,22 @@ importFileInput.addEventListener("change", async event => {
 
 
         if (parsed.visitCounts && typeof parsed.visitCounts === 'object') {
-    const restored = Object.fromEntries(
-        Object.entries(parsed.visitCounts)
-            .filter(([id, count]) => Number.isInteger(count) && count > 0)
-    );
-    if (shouldReplace) {
-        visitCounts = restored;
-    } else {
+           const restored = Object.fromEntries(
+                 Object.entries(parsed.visitCounts)
+                 .filter(([id, count]) => Number.isInteger(count) && count > 0));
+
+        if (shouldReplace) {
+           visitCounts = restored;
+        } else {
         // Beim Zusammenführen: höherer Wert gewinnt
         for (const [id, count] of Object.entries(restored)) {
             visitCounts[id] = Math.max(visitCounts[id] || 0, count);
         }
+      }
+        saveVisitCounts(visitCounts);
     }
-    saveVisitCounts(visitCounts);
-}
 
-
-
-        update();
+    update();
     } catch {
         alert("Import fehlgeschlagen. Bitte eine gültige JSON-Datei auswählen.");
     } finally {
