@@ -1196,7 +1196,7 @@ exportBtn.addEventListener("click", () => {
 
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = "favoriten-links.json";
+    anchor.download = buildBackupFilename();
     anchor.click();
 
     URL.revokeObjectURL(url);
