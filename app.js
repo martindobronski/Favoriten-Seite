@@ -13,15 +13,14 @@ const tilesContainer = document.getElementById("tilesContainer");
 const exportBtn = document.getElementById("exportBtn");
 const importBtn = document.getElementById("importBtn");
 const importFileInput = document.getElementById("importFileInput");
-// Auto-Export on change (debounced, toggleable)
-//let autoExportEnabled = true;
 const storedAutoExport = localStorage.getItem('autoExportEnabled');
-let autoExportEnabled = storedAutoExport === null ? true : storedAutoExport === 'true';
 
+let autoExportEnabled = storedAutoExport === null ? true : storedAutoExport === 'true';
 let autoExportSuppressed = true;
 let suppressAutoExportOnce = false;
 let exportDebounceTimer = null;
 const EXPORT_DEBOUNCE_MS = 5000; // 5 Sekunden bis Export nach Änderung
+
 // Track if an auto-export has already been performed since the last change
 let autoExportTriggeredSinceLastChange = false;
 
@@ -46,14 +45,8 @@ function buildBackupFilename() {
     const mi = pad(dt.getMinutes());
     const ss = pad(dt.getSeconds());
     const timePart = `${y}${m}${d}-${hh}${mi}${ss}`;
-    let catPart = '';
-    try {
-        const cats = (categoryOrder || []).slice(0, 3).map(c => String(c).replace(/\s+/g, '_').replace(/[^A-Za-z0-9_-]/g, ''));
-        if (cats.length) catPart = '-' + cats.join('_');
-    } catch {
-        /* ignore */
-    }
-    return `favoriten-links-backup-${timePart}${catPart}.json`;
+
+    return `favoriten-links-backup-${timePart}.json`;
 }
 
 function scheduleAutoExport() {
@@ -82,7 +75,8 @@ function exportCurrentState() {
         const payload = {
             exportedAt: new Date().toISOString(),
             categoryOrder,
-            links
+            links,
+            visitCounts
         };
 
         const blob = new Blob([JSON.stringify(payload, null, 2)], {
@@ -1192,7 +1186,8 @@ exportBtn.addEventListener("click", () => {
     const payload = {
         exportedAt: new Date().toISOString(),
         categoryOrder,
-        links
+        links,
+        visitCounts
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], {
         type: "application/json"
@@ -1290,6 +1285,25 @@ importFileInput.addEventListener("change", async event => {
             }
         }
 
+
+        if (parsed.visitCounts && typeof parsed.visitCounts === 'object') {
+    const restored = Object.fromEntries(
+        Object.entries(parsed.visitCounts)
+            .filter(([id, count]) => Number.isInteger(count) && count > 0)
+    );
+    if (shouldReplace) {
+        visitCounts = restored;
+    } else {
+        // Beim Zusammenführen: höherer Wert gewinnt
+        for (const [id, count] of Object.entries(restored)) {
+            visitCounts[id] = Math.max(visitCounts[id] || 0, count);
+        }
+    }
+    saveVisitCounts(visitCounts);
+}
+
+
+
         update();
     } catch {
         alert("Import fehlgeschlagen. Bitte eine gültige JSON-Datei auswählen.");
@@ -1363,7 +1377,8 @@ window.addEventListener('beforeunload', (event) => {
         const payload = {
             exportedAt: new Date().toISOString(),
             categoryOrder,
-            links
+            links,
+            visitCounts
         };
         const blob = new Blob([JSON.stringify(payload, null, 2)], {
             type: "application/json"
