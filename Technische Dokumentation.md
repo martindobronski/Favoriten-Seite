@@ -1,115 +1,393 @@
-# Technische Dokumentation: Meine Favoriten
+# Meine Favoriten – Technische Dokumentation
 
-## 1. Projektübersicht
+**Version 0.7 vom 06.05.2026 / © MD. 2026**
 
-„Meine Favoriten“ ist eine reine Client-side Single Page Application (SPA) zur Verwaltung von Lesezeichen. Die Anwendung verzichtet vollständig auf ein Backend und speichert alle Daten lokal im Browser des Nutzers. Der Fokus liegt auf Datenschutz, lokaler Datensouveränität und geringer Ressourcennutzung.
+---
 
-Die Architektur basiert auf einer statischen HTML/CSS/JS-Struktur ohne externe Abhängigkeiten (Vanilla JS). Es werden keine Bibliotheken oder Frameworks verwendet. Ein besonderes Merkmal ist der datenschutzkonforme Ansatz: Es werden keine externen Dienste (wie die Google Favicon API) für die Darstellung von Icons genutzt, und es kommen keine Tracking-Codes zum Einsatz. Die Datenpersistenz erfolgt ausschließlich über die `localStorage` API des Browsers.
+## 1. Übersicht
 
-## 2. Datenmodell & Speicherung
+„Meine Favoriten" ist eine clientseitige Single-Page-Application (SPA) ohne Backend. Sie besteht aus drei Dateien und benötigt keinen Build-Prozess, kein Framework und keine externe Abhängigkeit.
 
-Die Anwendung verwaltet drei primäre Datensätze im `localStorage`. Alle Daten werden als JSON-Strings serialisiert gespeichert.
+### 1.1 Dateistruktur
 
-### Schlüsselkonstanten
-
-Im Quellcode sind drei eindeutige Schlüssel definiert, um die Datenbereiche zu trennen:
-
-* `favorite-links-v1`: Speichert den Hauptdatensatz aller Favoriten-Links.
-* `favorite-category-order-v1`: Speichert die vom Nutzer definierte Reihenfolge der Kategorien.
-* `favorite-visit-counts-v1`: Speichert die Nutzungsstatistik (Besuchszähler) pro Link.
-
-### Datenstrukturen
-
-**Links (`favorite-links-v1`)**
-Dieser Datensatz ist ein Array von Objekten. Jeder Link besitzt eine eindeutige UUID, um ihn auch bei Namensgleichheit sicher identifizieren zu können.
-
-```json
-[
-  {
-    "id": "uuid-v4-string",
-    "title": "Beispiel Titel",
-    "url": "https://example.com",
-    "category": "Kategorie Name"
-  }
-]
+```
+Favoriten-PWA/
+├── index.html            # Struktur und Dialoge
+├── app.js                # Gesamte Anwendungslogik
+├── styles.css            # Styling
+├── manifest.json         # PWA-Manifest
+├── sw.js                 # Service Worker
+├── BEDIENUNGSANLEITUNG.pdf
+└── icons/
+    ├── icon-192.png
+    └── icon-512.png
 ```
 
-**Kategorien-Reihenfolge (`favorite-category-order-v1`)**
-Ein einfaches Array von Strings, das die explizite Sortierreihenfolge der Kategorien widerspiegelt, wie sie der Nutzer im Sortierdialog festgelegt hat.
+### 1.2 Technologie-Stack
 
-```json
-["Nachrichten", "Wissen", "Allgemein"]
-```
+| Schicht      | Technologie                                            |
+| ------------ | ------------------------------------------------------ |
+| Markup       | HTML5 (`<dialog>`, `<datalist>`, semantische Elemente) |
+| Logik        | Vanilla JavaScript (ES2022, keine Frameworks)          |
+| Styling      | CSS3 (Custom Properties, Flexbox, Grid)                |
+| Persistenz   | `localStorage` (Browser-API)                           |
+| Offline      | Service Worker (Cache-first-Strategie)                 |
+| Installation | PWA Manifest (`manifest.json`)                         |
 
-**Besuchszähler (`favorite-visit-counts-v1`)**
-Ein Objekt (als Map genutzt), das die Klickhäufigkeit pro Link-ID speichert. Dies dient der Generierung der automatischen Kategorie „Am häufigsten besucht“.
+---
+
+## 2. Datenmodell
+
+Alle Daten werden im `localStorage` des Browsers unter drei Schlüsseln gespeichert.
+
+### 2.1 localStorage-Schlüssel
+
+| Konstante            | Schlüssel                    | Typ                   | Inhalt                           |
+| -------------------- | ---------------------------- | --------------------- | -------------------------------- |
+| `STORAGE_KEY`        | `favorite-links-v1`          | `Array<Link>`         | Alle Favoriten                   |
+| `CATEGORY_ORDER_KEY` | `favorite-category-order-v1` | `Array<string>`       | Gewünschte Kategorienreihenfolge |
+| `VISIT_COUNTS_KEY`   | `favorite-visit-counts-v1`   | `Record<id, number>`  | Besuchszähler je Link-ID         |
+| –                    | `autoExportEnabled`          | `"true"` \| `"false"` | Auto-Export-Einstellung          |
+
+### 2.2 Link-Objekt
 
 ```json
 {
-  "uuid-v4-string": 42,
-  "another-uuid": 5
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "title": "Tagesschau",
+  "url": "https://www.tagesschau.de",
+  "category": "Nachrichten"
 }
 ```
 
-### Speichermanagement
+| Feld       | Typ                | Pflicht | Beschreibung                                       |
+| ---------- | ------------------ | ------- | -------------------------------------------------- |
+| `id`       | `string` (UUID v4) | ja      | Eindeutige ID, generiert via `crypto.randomUUID()` |
+| `title`    | `string`           | ja      | Anzeigename der Kachel                             |
+| `url`      | `string`           | ja      | Beliebiges URL-Schema (https, http, obsidian, ...) |
+| `category` | `string`           | ja      | Kategoriezuordnung; Default: `"Allgemein"`         |
 
-Da der `localStorage` eines Browsers typischerweise auf 5 bis 10 MB begrenzt ist, implementiert die Funktion `safeLocalStorageSetItem` eine robuste Fehlerbehandlung. Beim Versuch, Daten zu speichern, wird ein `try-catch`-Block verwendet. Tritt ein `QuotaExceededError` auf, initiiert das System eine automatische Bereinigung: Es werden verwaiste Einträge in den Besuchszählern (`visitCounts`) gelöscht, also solche IDs, die nicht mehr in der aktuellen Link-Liste existieren. Gelingt das Speichern danach immer noch nicht, wird dem Nutzer eine kritische Warnmeldung angezeigt mit der Aufforderung, einen manuellen Export durchzuführen und alte Daten zu löschen.
+### 2.3 Export-Format (JSON)
 
-## 3. Kernlogik & Funktionen
+```json
+{
+  "exportedAt": "2026-05-06T14:30:22.000Z",
+  "categoryOrder": ["Nachrichten", "Wissen", "Tools"],
+  "links": [ { "id": "...", "title": "...", "url": "...", "category": "..." } ],
+  "visitCounts": { "550e8400-...": 42 }
+}
+```
 
-### Initialisierung
+---
 
-Beim Laden der Seite (`DOMContentLoaded`) erfolgt die Initialisierung in mehreren Schritten. Zuerst werden die Daten aus dem `localStorage` gelesen (`loadLinks`, `loadCategoryOrder`, `loadVisitCounts`). Falls keine Daten vorhanden sind oder ein Lesefehler auftritt, werden Default-Werte (z. B. die Links zu Tagesschau und Wikipedia) gesetzt. Anschließend wird die `update()`-Funktion aufgerufen, welche die Kategorien synchronisiert, verwaiste Zähldaten bereinigt und das vollständige Rendering der Oberfläche auslöst.
+## 3. Architektur
 
-### URL- und Kategorien-Normalisierung
+### 3.1 Initialisierungsablauf
 
-Um Datenkonsistenz zu gewährleisten, werden Eingaben vor der Speicherung normalisiert. Die Funktion `normalizeUrl` trimmt Leerzeichen und prüft mittels regulärem Ausdruck, ob ein Protokoll vorhanden ist. Fehlt dieses, wird automatisch `https://` vorangestellt. Spezielle Protokolle wie `obsidian://` oder `msteams:` werden erkannt und beibehalten. Die Funktion `normalizeCategory` stellt sicher, dass Kategorienamen getrimmt werden und fällt bei leerer Eingabe auf den Standardwert „Allgemein“ zurück.
+```
+Seitenload
+  │
+  ├─ localStorage lesen → links, categoryOrder, visitCounts laden
+  ├─ autoExportSuppressed = true   (verhindert Export beim Start)
+  ├─ saveLinks(links)              (Normalisierung sicherstellen)
+  ├─ update()                      (Render-Zyklus)
+  ├─ autoExportSuppressed = false  (Export ab jetzt erlaubt)
+  └─ hasChanges = false
+```
 
-### Favoriten-Logik
+### 3.2 Render-Zyklus
 
-Beim Hinzufügen eines neuen Links wird diesem eine eindeutige UUID via `crypto.randomUUID()` zugewiesen. Neue Einträge werden am Anfang des Arrays platziert (`unshift`), um sie sofort sichtbar zu machen. Jeder Klick auf einen Link löst die Funktion `recordVisit` aus, die den entsprechenden Zähler im `visitCounts`-Objekt inkrementiert und sofort speichert. Dies triggered ein erneutes Rendering, um die dynamische Kategorie „Am häufigsten besucht“ zu aktualisieren. Diese Liste wird aus den gespeicherten Zähldaten berechnet, nach Häufigkeit sortiert und auf die ersten 5 Einträge begrenzt.
+Jede Zustandsänderung läuft durch dieselbe Pipeline:
 
-### Drag & Drop System
+```
+Nutzeraktion
+  │
+  ├─ Daten mutieren (links / categoryOrder / visitCounts)
+  ├─ localStorage schreiben (safeLocalStorageSetItem)
+  ├─ scheduleAutoExport()   (Debounce-Timer neu starten)
+  └─ update()
+       ├─ syncCategoryOrder()   (neue Kategorien einpflegen)
+       ├─ pruneVisitCounts()    (verwaiste Zähler entfernen)
+       ├─ renderTopStats()      (Statistik-Panel aktualisieren)
+       └─ render()              (Kachelbereich neu aufbauen)
+```
 
-Die Anwendung nutzt die native HTML5 Drag & Drop API für die Sortierung. Beim Verschieben von Kacheln (`moveLink`) wird sichergestellt, dass dies nur innerhalb derselben Kategorie geschieht. Das Sortieren der Kategorien selbst erfolgt über einen separaten Dialog (`sortCategoriesDialog`). Hierbei wird mit einem temporären Array (`pendingCategoryOrder`) gearbeitet, sodass Änderungen erst wirksam werden, wenn der Nutzer den Dialog explizit mit „Speichern“ bestätigt. Globale Variablen tracken dabei das aktuell gezogene Element.
+### 3.3 Globale Zustandsvariablen
 
-### Import & Export
+| Variable               | Typ                  | Beschreibung                        |
+| ---------------------- | -------------------- | ----------------------------------- |
+| `links`                | `Array<Link>`        | Aktuell geladene Favoritenliste     |
+| `categoryOrder`        | `Array<string>`      | Gewünschte Anzeigereihenfolge       |
+| `visitCounts`          | `Record<id, number>` | Besuchszähler                       |
+| `searchQuery`          | `string`             | Aktueller Suchbegriff (lowercase)   |
+| `hasChanges`           | `boolean`            | Ungespeicherte Änderungen vorhanden |
+| `statsVisible`         | `boolean`            | Statistik-Panel sichtbar            |
+| `draggedId`            | `string\|null`       | ID der aktuell gezogenen Kachel     |
+| `editingLinkId`        | `string\|null`       | ID des gerade bearbeiteten Links    |
+| `activeCategoryMenu`   | `HTMLElement\|null`  | Aktuell offenes Kategorien-Menü     |
+| `pendingCategoryOrder` | `Array<string>`      | Zwischenstand im Sortierdialog      |
 
-Die Export-Funktion erstellt ein JSON-Objekt, das einen Zeitstempel, die Kategorien-Reihenfolge und die gesamte Link-Liste enthält. Der Download wird clientseitig durch Erstellen eines temporären `<a>`-Tags und eines Blob-Objects ausgelöst. Beim Import wird die hochgeladene JSON-Datei gelesen und durch die Funktion `sanitizeImportedLinks` validiert. Dabei werden Struktur und URLs geprüft (`new URL()`), und fehlende UUIDs werden neu generiert. Der Nutzer kann wählen, ob die importierten Daten die bestehenden ersetzen oder ergänzen sollen.
+---
 
-### Automatischer Backup-Export
+## 4. Kernfunktionen
 
-Ein Event-Listener auf dem `window`-Objekt überwacht das Schließen des Tabs (`beforeunload`). Wenn seit dem letzten Speichern Änderungen vorgenommen wurden (`hasChanges === true`), versucht das Skript automatisch, eine Backup-Datei herunterzuladen. Um doppelte Warnmeldungen des Browsers zu vermeiden, wird das Änderungs-Flag sofort zurückgesetzt. Sollte der Download vom Browser blockiert werden, dient eine generische Warnmeldung im `event.returnValue` als letztes Sicherheitsnetz, um den Nutzer auf den versuchten Export hinzuweisen.
+### 4.1 Speicher-Schicht
 
-## 4. DOM-Manipulation & Rendering
+#### `safeLocalStorageSetItem(key, value)`
 
-Das Rendering der Anwendung erfolgt vollständig dynamisch über JavaScript mittels `document.createElement`. Es wird keine Template-Engine verwendet.
+Wrapper um `localStorage.setItem` mit zweistufiger Fehlerbehandlung bei `QuotaExceededError`:
 
-### Tile Factory
+1. Verwaiste Einträge in `visitCounts` entfernen und erneut versuchen
+2. Bei anhaltendem Fehler: kritische Warnung an den Nutzer
 
-Die Funktion `createTile` erzeugt das DOM für eine einzelne Favoriten-Kachel. Ein entscheidendes Merkmal ist die Favicon-Logik: Um Datenschutz zu gewährleisten, wird versucht, das Icon direkt von der Ziel-Domain (`domain.com/favicon.ico`) zu laden. Schlägt dies fehl, wird kein externer Dienst angefragt, sondern ein lokal im Code eingebettetes SVG (Data URI) als Platzhalter verwendet. Die Interaktionselemente (Link, Bearbeiten-, Löschen-Buttons) werden ebenfalls dynamisch erstellt und mit Event-Listenern versehen. Drag-and-Drop-Handles werden nur für manuelle Kategorien eingefügt, nicht für die automatische „Am häufigsten besucht“-Liste.
+#### `loadLinks()` / `saveLinks()` / `setLinks()`
 
-### Render-Pipeline
+- `loadLinks()` liest und validiert aus dem Storage; gibt `defaultLinks` zurück falls leer
+- `saveLinks()` serialisiert und schreibt, ruft danach `scheduleAutoExport()` auf
+- `setLinks()` setzt `links` und ruft `saveLinks()` auf, setzt `hasChanges = true`
 
-Die Hauptfunktion `render` leert den Container und baut die Ansicht neu auf. Zuerst wird die Liste der anzuzeigenden Links basierend auf der aktuellen Suchanfrage gefiltert (Suche in Titel, URL und Kategorie). Die verbleibenden Links werden nach Kategorien gruppiert. Sofern Treffer vorliegen, wird zunächst der Abschnitt „Am häufigsten besucht“ gerendert. Anschließend iteriert das Skript über die definierte Kategorien-Reihenfolge und erstellt für jede Kategorie einen Abschnitt mit den zugehörigen Kacheln. Abschließend wird die Vorschlagsliste für die Kategorie-Eingabe aktualisiert.
+#### `loadCategoryOrder()` / `saveCategoryOrder()`
 
-## 5. Sicherheit & Validierung
+Lesen/Schreiben der Kategorienreihenfolge. `saveCategoryOrder()` setzt `hasChanges = true` und ruft `scheduleAutoExport()` auf.
 
-Die Anwendung setzt auf mehrere Sicherheitsmechanismen. Um Cross-Site-Scripting (XSS) zu verhindern, werden alle Nutzereingaben (Titel, URLs) ausschließlich über `textContent` in das DOM eingefügt, niemals über `innerHTML`. URLs werden beim Speichern und Importieren mit dem `new URL()` Constructor validiert, um malformed URLs abzufangen. Beim Import werden zudem nur Felder übernommen, die den erwarteten Datentypen entsprechen; ungültige Einträge werden verworfen. Hinsichtlich der Protokoll-Sicherheit erlaubt der Code explizit `http`, `https` und benutzerdefinierte Schemes. Eine explizite Blockliste für potenziell gefährliche Protokolle wie `javascript:` ist im aktuellen Code nicht implementiert, wobei sich die Anwendung hier auf das Sandboxing des Browsers und die Validierung durch den URL-Constructor verlässt.
+#### `loadVisitCounts()` / `saveVisitCounts()`
 
-## 6. Bekannte Einschränkungen
+`saveVisitCounts()` löst **keinen** Auto-Export aus (Besuche sollen den Export-Rhythmus nicht beeinflussen).
 
-Trotz der umfassenden Funktionalität gibt es technische Grenzen. Die native HTML5 Drag & Drop API wird von mobilen Browsern (insbesondere auf iOS und Android) oft nicht oder nur eingeschränkt unterstützt, da Touch-Events nicht implementiert sind. Das Speicherlimit des `localStorage` ist browserabhängig (meist ca. 5-10 MB); bei einer extrem großen Anzahl von Links kann dieser Speicher erschöpft werden. Da es keine Backend-Komponente gibt, erfolgt keine automatische Synchronisation zwischen verschiedenen Geräten; der Nutzer muss den JSON-Export manuell übertragen, um Daten zu migrieren.
+### 4.2 URL- und Kategorie-Normalisierung
 
-## 7. Datei-Struktur
+#### `normalizeUrl(rawUrl)`
 
-Das Projekt besteht aus vier zentralen Dateien:
+Ergänzt `https://` wenn kein Protokoll erkannt wird (Regex: `/^[a-zA-Z]+:/`). Unterstützt damit beliebige Schemata wie `obsidian://`, `file://`, `ftp://`.
 
-* **`index.html`**: Enthält das Grundgerüst der Seite, die Definition der Modal-Dialoge (`<dialog>`) und die Container-Elemente für das Rendering.
-* **`styles.css`**: Beinhaltet das vollständige Styling, definiert CSS-Variablen für Light- und Dark-Themes und sorgt für ein responsives Design auf verschiedenen Bildschirmgrößen.
-* **`app.js`**: Enthält die gesamte Anwendungslogik, inklusive Event-Listener, Storage-Management, Validierungsfunktionen und der Render-Pipeline.
-* **`BEDIENUNGSANLEITUNG.md`**: Die Benutzerdokumentation mit Erklärungen zur Bedienung und Fehlerbehebung.
+#### `normalizeCategory(rawCategory)`
 
-## 8. Erweiterungsmöglichkeiten
+Trimmt Whitespace, gibt `"Allgemein"` zurück wenn leer.
 
-Für zukünftige Versionen bieten sich mehrere Erweiterungen an. Die Implementierung von Touch-Events (`touchstart`, `touchmove`, `touchend`) wäre notwendig, um Drag & Drop auch auf mobilen Geräten nutzbar zu machen. Eine Umwandlung in eine Progressive Web App (PWA) durch Hinzufügen eines `manifest.json` und eines Service Workers würde Offline-Nutzung und die Installation auf dem Homescreen ermöglichen. Zudem könnte eine optionale client-seitige Verschlüsselung des JSON-Exports mittels der Web Crypto API die Sicherheit sensibler Lesezeichen weiter erhöhen.
+### 4.3 Kategorien-Synchronisation
+
+#### `syncCategoryOrder()`
+
+Gleicht `categoryOrder` mit den tatsächlich in `links` vorhandenen Kategorien ab:
+
+- Nicht mehr existierende Kategorien werden entfernt
+- Neue (noch nicht geordnete) Kategorien werden per `unshift` vorne eingefügt
+- `MOST_VISITED_CATEGORY` wird immer herausgefiltert (automatisch verwaltet)
+
+#### `getExistingCategories()`
+
+Gibt ein dedupliziertes Array aller Kategorien aus `links` zurück (ohne die automatische Kategorie).
+
+### 4.4 Besuchszähler
+
+#### `recordVisit(linkId)`
+
+Inkrementiert den Zähler, setzt `suppressAutoExportOnce = true` (damit der Besuch keinen Export auslöst), und führt nach einem `setTimeout(0)` einen `update()` durch.
+
+#### `pruneVisitCounts()`
+
+Entfernt Zähler für IDs, die nicht mehr in `links` existieren.
+
+#### `getMostVisitedLinks()`
+
+Sortiert Links nach Besuchshäufigkeit absteigend (bei Gleichstand alphabetisch), gibt maximal `MOST_VISITED_LIMIT` (6) zurück.
+
+### 4.5 Import-Validierung
+
+#### `sanitizeImportedLinks(rawLinks)`
+
+Filtert und bereinigt importierte Link-Objekte:
+
+- Pflichtfelder `title` und `url` müssen Strings sein
+- URL wird normalisiert und per `new URL()` validiert
+- Fehlende `id` wird durch neue UUID ersetzt
+- Ungültige Einträge werden still verworfen
+
+### 4.6 Drag & Drop
+
+#### `moveLink(fromId, toId, targetCategory)`
+
+Verschiebt eine Kachel innerhalb derselben Kategorie. Kategorie-Wechsel wird abgelehnt (dafür ist `reassignLinkCategory` zuständig). Berechnet `adjustedToIndex` um den Versatz durch das Entfernen des Elements zu kompensieren.
+
+#### `moveLinkToCategoryEnd(fromId, targetCategory)`
+
+Verschiebt eine Kachel ans Ende einer Kategorie (Drop auf leeren Bereich).
+
+#### `reassignLinkCategory(linkId, nextCategory)`
+
+Ändert die Kategorie eines Links und fügt diese ggf. in `categoryOrder` ein.
+
+---
+
+## 5. Auto-Export-Mechanismus
+
+### 5.1 Zustandsvariablen
+
+| Variable                             | Zweck                                                     |
+| ------------------------------------ | --------------------------------------------------------- |
+| `autoExportEnabled`                  | Vom Nutzer ein-/ausschaltbar; persistiert in localStorage |
+| `autoExportSuppressed`               | Während Initialisierung `true`, danach `false`            |
+| `suppressAutoExportOnce`             | Einmalige Unterdrückung (z. B. bei Besuchszähler-Updates) |
+| `exportDebounceTimer`                | Referenz auf den aktiven `setTimeout`-Handle              |
+| `autoExportTriggeredSinceLastChange` | Verhindert doppelten Export beim `beforeunload`           |
+
+### 5.2 Ablauf
+
+```
+Änderung → scheduleAutoExport()
+  │
+  ├─ Abbruch wenn: !autoExportEnabled || autoExportSuppressed || suppressAutoExportOnce
+  ├─ autoExportTriggeredSinceLastChange = false
+  ├─ clearTimeout(exportDebounceTimer)   (Timer zurücksetzen)
+  └─ exportDebounceTimer = setTimeout(exportCurrentState, 5000)
+                                          │
+                                          └─ Nach 5s: exportCurrentState()
+                                               ├─ Payload bauen (links + categoryOrder + visitCounts)
+                                               ├─ Blob → Object-URL → <a>.click()
+                                               └─ autoExportTriggeredSinceLastChange = true
+```
+
+### 5.3 Sonderfall: Bearbeiten-Dialog
+
+`openEditDialog()` ruft `clearTimeout(exportDebounceTimer)` auf. Der Timer wird erst nach `editForm`-Submit via `scheduleAutoExport()` neu gestartet. Damit können beliebig viele Bearbeitungen durchgeführt werden, ohne dass der Timer zwischendurch abläuft.
+
+### 5.4 Export beim Verlassen (`beforeunload`)
+
+Wenn `hasChanges === true` und `autoExportTriggeredSinceLastChange === false`, wird beim Schließen der Seite ein sofortiger Export ausgelöst.
+
+---
+
+## 6. Rendering
+
+### 6.1 `render()`
+
+Baut den gesamten Kachelbereich neu auf:
+
+1. `tilesContainer.innerHTML = ""` (kompletter Reset)
+2. Links nach aktuellem `searchQuery` filtern
+3. Gefilterte Links nach Kategorie gruppieren (`Map<string, Link[]>`)
+4. Automatische Kategorie „Am häufigsten besucht" zuerst rendern
+5. Dann alle Kategorien in `categoryOrder`-Reihenfolge
+
+### 6.2 `renderCategorySection(category, items, options)`
+
+Erstellt einen `<section>`-Block mit Header und Kachelgitter. Bei `isAutomatic = true` werden Drag & Drop und der Löschen-Button am Kategoriekopf deaktiviert.
+
+### 6.3 `createTile(link, options)`
+
+Factory-Funktion für eine einzelne Kachel (`<article>`). Erzeugt:
+
+- Favicon (mit Mixed-Content-Schutz und SVG-Fallback)
+- Titelzeile (Favicon + Name)
+- URL-Zeile
+- Aktionsleiste (Besuchs-Badge, Drag-Handle, 🏷️, ✏️, 🗑️)
+- Drag & Drop Event Listener (nur bei nicht-automatischen Kacheln)
+
+**Favicon-Ladelogik:**
+
+```
+URL ist https:// oder http://?
+  ├─ Ja: urlObj.protocol === 'http:' && location.protocol === 'https:'?
+  │       ├─ Ja: throw → SVG-Fallback (Mixed Content vermeiden)
+  │       └─ Nein: favicon.src = `${origin}/favicon.ico`
+  │                 onerror → SVG-Fallback
+  └─ Nein (custom scheme): SVG-Fallback
+```
+
+### 6.4 `renderCategorySuggestions()`
+
+Befüllt das `<datalist>`-Element mit alphabetisch sortierten Kategorievorschlägen (`.sort(localeCompare("de"))`). Wird nach jedem `render()` aufgerufen.
+
+### 6.5 `renderTopStats()`
+
+Rendert das Statistik-Panel als innerHTML-String mit Balkengrafik (CSS-`width` in Prozent). Wird nur neu gerendert wenn `statsVisible === true`.
+
+---
+
+## 7. Dialoge
+
+Die App verwendet das native HTML5-`<dialog>`-Element für alle modalen Fenster.
+
+### 7.1 Bearbeiten-Dialog (`#editDialog`)
+
+- Geöffnet via `editDialog.showModal()`
+- Formulardaten werden beim Submit validiert (leerer Titel, ungültige URL)
+- Nach Speichern: `scheduleAutoExport()` explizit aufgerufen
+
+### 7.2 Kategorien-sortieren-Dialog (`#sortCategoriesDialog`)
+
+- Arbeitet auf `pendingCategoryOrder` (Kopie von `categoryOrder`)
+- Drag & Drop innerhalb der Liste über HTML5 Drag API
+- Vier Positions-Buttons je Eintrag (⇧ ↑ ↓ ⇩)
+- Submit übernimmt `pendingCategoryOrder` → `categoryOrder`
+- Abbrechen verwirft `pendingCategoryOrder` ohne Auswirkung
+
+### 7.3 Kategorie-Kontextmenü
+
+Kein `<dialog>`, sondern ein dynamisch erzeugtes `<div>` das direkt an `document.body` angehängt wird. Positionierung via `getBoundingClientRect()` mit Viewport-Kollisionserkennung (klappt nach oben wenn zu wenig Platz nach unten). Wird bei Klick außerhalb via `document.addEventListener("click")` geschlossen.
+
+---
+
+## 8. PWA-Implementierung
+
+### 8.1 manifest.json
+
+```json
+{
+  "name": "Meine Favoriten",
+  "short_name": "Favoriten",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "theme_color": "#317EFB",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512" }
+  ]
+}
+```
+
+### 8.2 Service Worker (`sw.js`)
+
+Cache-first-Strategie:
+
+```
+Fetch-Event
+  ├─ Nur GET-Requests, nur same-origin
+  ├─ Cache-Treffer? → direkt zurückgeben
+  └─ Kein Treffer → Netzwerk, Antwort in Cache schreiben
+       └─ Netzwerk offline → Fallback auf /index.html
+```
+
+Beim `install`-Event werden alle App-Dateien vorsorglich gecacht (`addAll`). Beim `activate`-Event werden veraltete Caches gelöscht.
+
+---
+
+## 9. Sicherheit & Robustheit
+
+### 9.1 Mixed Content
+
+In `createTile()` wird geprüft ob `location.protocol === 'https:'` und `urlObj.protocol === 'http:'`. In diesem Fall wird die Favicon-Anfrage nicht gestellt und direkt auf den SVG-Fallback gewechselt, um Browser-Warnungen zu vermeiden.
+
+### 9.2 localStorage-Quota
+
+`safeLocalStorageSetItem()` fängt `QuotaExceededError` und versucht in zwei Stufen zu bereinigen, bevor eine Warnung ausgegeben wird.
+
+### 9.3 Import-Validierung
+
+`sanitizeImportedLinks()` validiert jeden importierten Eintrag einzeln mit `new URL()`. Ungültige Einträge werden verworfen, valide IDs werden beibehalten, fehlende IDs via `crypto.randomUUID()` neu generiert.
+
+### 9.4 URL-Schema-Unterstützung
+
+`normalizeUrl()` erkennt jedes bekannte Protokoll via `/^[a-zA-Z]+:/` und ergänzt nur dann `https://`, wenn kein Schema vorhanden ist. Damit werden `obsidian://`, `file://`, `ssh://` etc. korrekt durchgereicht.
+
+---
+
+## 10. Bekannte Einschränkungen
+
+| Einschränkung                                            | Ursache                                   | Workaround                                         |
+| -------------------------------------------------------- | ----------------------------------------- | -------------------------------------------------- |
+| Kein Favicon bei `http://`-Links auf HTTPS-Seite         | Browser-seitige Mixed-Content-Policy      | Globus-Icon als Fallback                           |
+| PWA nicht installierbar über `file://`                   | Service Worker benötigt sicheren Ursprung | Lokalen Webserver verwenden                        |
+| `localStorage` max. ~5–10 MB                             | Browser-Limit                             | Regelmäßiger Export; Bereinigung verwaister Zähler |
+| Kein Server-seitiges Backup                              | By Design (offline-first)                 | Export-Funktion nutzen                             |
+| `beforeunload`-Export nicht in allen Browsern garantiert | Browser-API-Einschränkung                 | Auto-Export aktiviert                              |
