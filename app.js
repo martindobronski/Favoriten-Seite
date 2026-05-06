@@ -1211,7 +1211,7 @@ linkForm.addEventListener("submit", event => {
 
     if (!title && !url) {
         if (!categoryOrder.includes(category)) {
-            categoryOrder.unshift(category);
+            categoryOrder.push(category);
             saveCategoryOrder(categoryOrder);
         }
         update();
@@ -1242,7 +1242,7 @@ linkForm.addEventListener("submit", event => {
     hasChanges = true;
 
     if (!categoryOrder.includes(category)) {
-        categoryOrder.unshift(category);
+        categoryOrder.push(category);
         saveCategoryOrder(categoryOrder);
     }
     update();
