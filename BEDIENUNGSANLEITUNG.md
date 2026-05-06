@@ -26,8 +26,6 @@ Die App kann als Progressive Web App installiert werden. Dadurch erscheint sie w
 
 ## 2. Benutzeroberfläche
 
-Die App ist in folgende Bereiche gegliedert:
-
 | Bereich         | Beschreibung                                                            |
 | --------------- | ----------------------------------------------------------------------- |
 | Kopfbereich     | Titel und Untertitel der App                                            |
@@ -35,7 +33,7 @@ Die App ist in folgende Bereiche gegliedert:
 | Suchleiste      | Echtzeit-Suche über alle Favoriten                                      |
 | Statistik-Panel | Optionale Anzeige der Nutzungshäufigkeit (ein-/ausblendbar)             |
 | Kachelbereich   | Darstellung aller Favoriten gegliedert nach Kategorien                  |
-| Fußzeile        | Anzeige der App-Version                                                 |
+| Fußzeile        | Anzeige der App-Version und des Release-Datums                          |
 
 ---
 
@@ -46,32 +44,32 @@ Die App ist in folgende Bereiche gegliedert:
 Im oberen Eingabeformular stehen drei Felder zur Verfügung:
 
 - **Name** – die Bezeichnung, die auf der Kachel angezeigt wird
-- **URL** – die Webadresse des Favoriten (`https://` wird automatisch ergänzt, wenn kein Protokoll angegeben wird)
-- **Kategorie** – Zuordnung zu einer Gruppe; beim Eintippen werden vorhandene Kategorien als Vorschläge angezeigt
+- **URL** – die Webadresse (`https://` wird automatisch ergänzt, wenn kein Protokoll angegeben wird)
+- **Kategorie** – Zuordnung zu einer Gruppe; vorhandene Kategorien werden alphabetisch als Vorschläge angezeigt
 
 Anschließend die Schaltfläche **„Hinzufügen"** klicken oder **Enter** drücken.
 
-> **Tipp:** Wird nur eine Kategorie eingetragen (Name und URL leer gelassen), wird eine leere Kategorie erstellt. Das ist nützlich, um Kategorien vorab anzulegen.
+> **Tipp:** Wird nur eine Kategorie eingetragen (Name und URL leer gelassen), wird eine leere Kategorie erstellt.
+
+> **Tipp:** Neben `https://`-Adressen werden auch benutzerdefinierte Protokolle unterstützt, z. B. `obsidian://open?vault=MeinVault` zum Öffnen lokaler Anwendungen.
 
 ### 3.2 Favorit bearbeiten
 
-Jede Kachel besitzt einen Bearbeiten-Button (**✏️**). Ein Klick darauf öffnet einen Dialog mit den aktuellen Werten. Dort können Name, URL und Kategorie geändert werden. Mit **„Speichern"** werden die Änderungen übernommen.
+Jede Kachel besitzt einen Bearbeiten-Button (**✏️**). Ein Klick öffnet einen Dialog mit den aktuellen Werten. Mit **„Speichern"** werden die Änderungen übernommen.
 
-> **Hinweis:** Beim Öffnen des Bearbeiten-Dialogs wird ein laufender Auto-Export-Timer gestoppt. Der Timer startet erst nach dem Speichern erneut, sodass beliebig viele Bearbeitungen hintereinander möglich sind, ohne einen vorzeitigen Export auszulösen.
+> **Hinweis:** Beim Öffnen des Bearbeiten-Dialogs wird ein laufender Auto-Export-Timer gestoppt und erst nach dem Speichern neu gestartet.
 
 ### 3.3 Favorit löschen
 
-Der Löschen-Button (**🗑️**) auf jeder Kachel entfernt den Eintrag nach einer Sicherheitsabfrage dauerhaft aus der Liste.
+Der Löschen-Button (**🗑️**) auf jeder Kachel entfernt den Eintrag nach einer Sicherheitsabfrage dauerhaft.
 
 ### 3.4 Kategorie eines Favoriten ändern
 
-Über den Kategorie-Button (**🏷️**) auf jeder Kachel öffnet sich ein Kontextmenü mit allen verfügbaren Kategorien. Ein Klick auf eine Kategorie verschiebt den Favoriten sofort dorthin.
+Über den Kategorie-Button (**🏷️**) öffnet sich ein alphabetisch sortiertes Kontextmenü aller verfügbaren Kategorien. Ein Klick verschiebt den Favoriten sofort.
 
 ### 3.5 Reihenfolge ändern (Drag & Drop)
 
-Jede Kachel besitzt einen Drag-Handle (**↔️**). Durch Halten und Ziehen kann die Reihenfolge der Kacheln innerhalb einer Kategorie beliebig verändert werden.
-
-> **Tipp:** Kacheln können auch an das Ende einer anderen Kategorie gezogen werden, indem sie auf den leeren Bereich unterhalb der Kacheln einer Kategorie abgelegt werden.
+Über den Drag-Handle (**↔️**) kann die Reihenfolge der Kacheln innerhalb einer Kategorie per Maus verändert werden. Kacheln können auch auf den leeren Bereich einer anderen Kategorie gezogen werden, um sie dorthin zu verschieben.
 
 ---
 
@@ -79,37 +77,28 @@ Jede Kachel besitzt einen Drag-Handle (**↔️**). Durch Halten und Ziehen kann
 
 ### 4.1 Kategorien sortieren
 
-Über die Schaltfläche **„↕️ Kategorien sortieren"** öffnet sich ein Dialog, in dem die Reihenfolge der Kategorien angepasst werden kann:
+Über **„↕️ Kategorien sortieren"** öffnet sich ein Dialog zur Anpassung der Anzeigereihenfolge:
 
-- **Drag & Drop:** Kategorien per Maus in die gewünschte Reihenfolge ziehen
-- **⇧** Ganz nach oben verschieben
-- **↑** Eine Position nach oben
-- **↓** Eine Position nach unten
-- **⇩** Ganz nach unten verschieben
+- **Drag & Drop:** Kategorien per Maus verschieben
+- **⇧ / ↑ / ↓ / ⇩:** Schrittweise oder ganz nach oben/unten verschieben
 
-Mit **„Speichern"** wird die neue Reihenfolge übernommen, **„Abbrechen"** verwirft alle Änderungen.
+Mit **„Speichern"** übernehmen, **„Abbrechen"** verwirft die Änderungen.
+
+> **Hinweis:** Die Kategoriesortierung betrifft nur die Anzeigereihenfolge. Die Vorschlagsliste beim Eintippen ist immer alphabetisch sortiert.
 
 ### 4.2 Kategorie löschen
 
-Im Kategoriekopf jeder Gruppe befindet sich ein Löschen-Button (**🗑️**). Eine Kategorie kann nur gelöscht werden, wenn sie keine Kacheln mehr enthält. Solange Einträge vorhanden sind, ist der Button deaktiviert.
+Im Kategoriekopf kann eine Kategorie über **🗑️** gelöscht werden – aber nur wenn sie keine Kacheln mehr enthält.
 
 ### 4.3 Automatische Kategorie „Am häufigsten besucht"
 
-Diese Kategorie wird automatisch angezeigt, sobald mindestens ein Favorit besucht wurde. Sie zeigt die bis zu 6 am häufigsten aufgerufenen Links und kann nicht manuell bearbeitet oder gelöscht werden.
+Wird automatisch angezeigt, sobald mindestens ein Favorit besucht wurde. Zeigt bis zu 6 Links und kann nicht manuell bearbeitet werden.
 
 ---
 
 ## 5. Suche
 
-Die Suchleiste filtert die angezeigten Favoriten in Echtzeit. Die Suche durchsucht gleichzeitig:
-
-- Den Namen des Favoriten
-- Die URL
-- Die Kategorie
-
-Leere Kategorien werden bei aktiver Suche ausgeblendet. Gibt es keine Treffer, wird eine entsprechende Meldung angezeigt.
-
-> **Tipp:** Die Suchleiste wird beim Start der App automatisch fokussiert – direkt lostippen genügt.
+Die Suchleiste filtert die Favoriten in Echtzeit nach Name, URL und Kategorie. Die Suchleiste wird beim Start automatisch fokussiert.
 
 ---
 
@@ -117,15 +106,13 @@ Leere Kategorien werden bei aktiver Suche ausgeblendet. Gibt es keine Treffer, w
 
 ### 6.1 Statistik anzeigen
 
-Über **„📊 Statistik anzeigen"** wird ein Panel eingeblendet, das alle besuchten Favoriten absteigend nach Aufrufhäufigkeit auflistet. Die ersten drei Plätze werden mit Medaillen-Icons (🥇 🥈 🥉) hervorgehoben. Ein Klick auf **„📊 Statistik ausblenden"** schließt das Panel wieder.
+**„📊 Statistik"** blendet ein Panel mit allen besuchten Favoriten sortiert nach Aufrufhäufigkeit ein. Die Top 3 werden mit 🥇 🥈 🥉 hervorgehoben. Der Button ist deaktiviert, solange kein Favorit besucht wurde.
 
-Der Button ist deaktiviert, solange noch kein Favorit besucht wurde.
+### 6.2 Zähler zurücksetzen
 
-### 6.2 Statistik zurücksetzen
+**„🔄 Zähler reset"** setzt alle Besuchszähler nach einer Sicherheitsabfrage auf null.
 
-Über **„🔄 Statistik zurücksetzen"** werden alle Besuchszähler nach einer Sicherheitsabfrage auf null gesetzt. Die Kategorie „Am häufigsten besucht" verschwindet daraufhin, bis wieder Links besucht werden.
-
-> **Hinweis:** Vor dem Zurücksetzen empfiehlt sich ein Export – die Besuchszähler sind in der Backup-Datei enthalten und können bei Bedarf über einen Import wiederhergestellt werden.
+> **Hinweis:** Vor dem Zurücksetzen empfiehlt sich ein Export – die Besuchszähler sind in der Backup-Datei enthalten und können per Import wiederhergestellt werden.
 
 ---
 
@@ -133,83 +120,75 @@ Der Button ist deaktiviert, solange noch kein Favorit besucht wurde.
 
 ### 7.1 Manueller Export
 
-Ein Klick auf **„⬇️ Export Favoriten"** lädt eine JSON-Datei herunter. Der Dateiname enthält Datum und Uhrzeit des Exports:
+**„⬇️ Export"** lädt eine JSON-Datei mit Favoriten, Kategorienreihenfolge und Besuchszählern herunter. Dateiname-Format:
 
 ```
 favoriten-links-backup-20260506-143022.json
 ```
 
-Die Datei enthält alle Favoriten, die Kategorienreihenfolge sowie die Besuchszähler.
-
 ### 7.2 Auto-Export
 
-Nach jeder Änderung (Hinzufügen, Bearbeiten, Löschen, Verschieben) startet automatisch ein 5-Sekunden-Timer. Läuft dieser ab, ohne dass weitere Änderungen vorgenommen wurden, wird automatisch eine Sicherungsdatei heruntergeladen. Das Dateinamensformat ist identisch mit dem manuellen Export.
-
-Der Auto-Export kann dauerhaft deaktiviert werden. Die Einstellung wird beim nächsten Start der App beibehalten.
-
-> **Hinweis:** Beim Öffnen des Bearbeiten-Dialogs wird der laufende Timer gestoppt und erst nach dem Speichern neu gestartet.
+Nach jeder Änderung startet ein 5-Sekunden-Timer. Läuft er ab, wird automatisch eine Sicherungsdatei heruntergeladen. Die Auto-Export-Checkbox schaltet diese Funktion dauerhaft ein oder aus – die Einstellung wird gespeichert.
 
 ### 7.3 Export beim Verlassen
 
-Wenn die App mit ungespeicherten Änderungen geschlossen wird und seit der letzten Änderung kein Auto-Export stattgefunden hat, wird beim Verlassen automatisch ein Export-Download ausgelöst. Der Browser zeigt dabei eine Bestätigungsmeldung an.
+Beim Schließen der App mit ungespeicherten Änderungen (und ohne vorangegangenen Auto-Export) wird automatisch ein Export ausgelöst.
 
 ### 7.4 Import
 
-Über **„⬆️ Import Favoriten"** kann eine zuvor exportierte JSON-Datei wieder eingelesen werden. Nach Auswahl der Datei erscheint eine Abfrage:
+**„⬆️ Import"** liest eine exportierte JSON-Datei ein. Anschließend Auswahl:
 
-- **Ersetzen:** Alle bestehenden Favoriten und Besuchszähler werden durch die importierten ersetzt.
-- **Zusammenführen:** Favoriten werden zusammengeführt. Bei doppelten Einträgen (gleiche ID) gewinnt die importierte Version. Bei Besuchszählern gewinnt jeweils der höhere Wert.
-
-> **Hinweis:** Beim Import werden ungültige Einträge (fehlende Pflichtfelder, ungültige URLs) automatisch herausgefiltert.
+- **Ersetzen:** Alle bestehenden Daten werden ersetzt.
+- **Zusammenführen:** Daten werden zusammengeführt; bei Duplikaten gewinnt die importierte Version, bei Besuchszählern der höhere Wert.
 
 ---
 
 ## 8. Schaltflächen-Übersicht
 
-| Schaltfläche              | Funktion                                                        |
-| ------------------------- | --------------------------------------------------------------- |
-| Hinzufügen                | Neuen Favoriten mit den eingegebenen Daten speichern            |
-| ↕️ Kategorien sortieren   | Dialog zum Umsortieren der Kategorienreihenfolge öffnen         |
-| ⬇️ Export Favoriten       | Alle Favoriten inkl. Besuchszähler als JSON-Datei herunterladen |
-| ⬆️ Import Favoriten       | JSON-Datei mit Favoriten und Besuchszählern importieren         |
-| 📊 Statistik anzeigen     | Nutzungsstatistik ein- oder ausblenden                          |
-| 🔄 Statistik zurücksetzen | Alle Besuchszähler nach Bestätigung auf null setzen             |
-| ❓ Hilfe                   | Diese Bedienungsanleitung öffnen                                |
-| ✏️ (Kachel)               | Bearbeiten-Dialog für diesen Favoriten öffnen                   |
-| 🗑️ (Kachel)              | Diesen Favoriten nach Bestätigung löschen                       |
-| 🏷️ (Kachel)              | Kategorie dieses Favoriten ändern                               |
-| ↔️ (Kachel)               | Kachel per Drag & Drop verschieben                              |
-| 🗑️ (Kategorie)           | Leere Kategorie löschen (nur aktiv wenn keine Kacheln darin)    |
+| Schaltfläche            | Funktion                                   |
+| ----------------------- | ------------------------------------------ |
+| Hinzufügen              | Neuen Favoriten speichern                  |
+| ↕️ Kategorien sortieren | Anzeigereihenfolge der Kategorien anpassen |
+| ⬇️ Export               | Backup als JSON-Datei herunterladen        |
+| ⬆️ Import               | JSON-Datei importieren                     |
+| 📊 Statistik            | Nutzungsstatistik ein-/ausblenden          |
+| 🔄 Zähler reset         | Alle Besuchszähler zurücksetzen            |
+| Auto-Export ☑️          | Automatischen Export ein-/ausschalten      |
+| ❓ Hilfe                 | Bedienungsanleitung öffnen (PDF)           |
+| ✏️ (Kachel)             | Favorit bearbeiten                         |
+| 🗑️ (Kachel)            | Favorit löschen                            |
+| 🏷️ (Kachel)            | Kategorie ändern                           |
+| ↔️ (Kachel)             | Reihenfolge per Drag & Drop ändern         |
+| 🗑️ (Kategorie)         | Leere Kategorie löschen                    |
 
 ---
 
 ## 9. Datenspeicherung
 
-Alle Daten werden ausschließlich im lokalen Speicher des Browsers (`localStorage`) gespeichert. Es findet keine Übertragung an externe Server statt.
+Alle Daten werden ausschließlich im `localStorage` des Browsers gespeichert. Kein Server, keine Cloud.
 
-Folgende Daten werden gespeichert:
+Gespeicherte Daten:
 
 - Favoritenliste (Name, URL, Kategorie)
 - Kategorienreihenfolge
 - Besuchszähler je Favorit
-- Einstellung des Auto-Exports (ein/aus)
+- Auto-Export-Einstellung (ein/aus)
 
-> **Wichtig:** Beim Löschen des Browser-Caches oder der Website-Daten gehen alle gespeicherten Favoriten verloren. Regelmäßiger Export wird empfohlen.
+> **Wichtig:** Beim Löschen des Browser-Caches gehen alle Daten verloren. Regelmäßiger Export wird dringend empfohlen.
 
-### 9.1 Speicherlimit
-
-Der `localStorage`-Speicher ist browserseitig begrenzt (typischerweise 5–10 MB). Wird das Limit erreicht, versucht die App zunächst automatisch verwaiste Besuchszähler zu bereinigen. Schlägt auch das fehl, erscheint eine Warnung mit der Aufforderung, sofort einen Export durchzuführen und alte Einträge zu löschen.
+Das Speicherlimit beträgt browserseitig typischerweise 5–10 MB. Bei Überschreitung versucht die App zunächst eine automatische Bereinigung verwaister Zähler; schlägt das fehl, erscheint eine Warnung.
 
 ---
 
 ## 10. Häufige Fragen & Fehlerbehebung
 
-| Problem                                          | Lösung                                                                                                                                                                    |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| App lädt nicht als PWA                           | Die App muss über HTTP/HTTPS aufgerufen werden, nicht über `file://`. Lokalen Webserver starten, z. B. `python3 -m http.server 8080`.                                     |
-| Favicons werden nicht angezeigt                  | Einige Seiten bieten kein `favicon.ico` an. Ein Globus-Symbol wird als Platzhalter angezeigt.                                                                             |
-| Keine Favicons bei lokalen Geräten (192.168.x.x) | Wird die App über HTTPS aufgerufen, können HTTP-Adressen aus Sicherheitsgründen keine Favicons laden. Das ist normales Browserverhalten.                                  |
-| Auto-Export lädt keine Datei herunter            | Prüfen, ob der Browser automatische Downloads erlaubt. Ggf. in den Browser-Einstellungen freigeben. Außerdem sicherstellen, dass der Auto-Export nicht deaktiviert wurde. |
-| Besuchszähler nach Reset wiederherstellen        | Vor dem Reset einen Export durchführen. Die exportierte JSON-Datei enthält die Besuchszähler und kann nach dem Reset wieder importiert werden.                            |
-| Daten nach Browser-Update weg                    | Daten im `localStorage` können beim Löschen von Browserdaten verloren gehen. Regelmäßig exportieren!                                                                      |
-| Import-Datei wird nicht erkannt                  | Nur JSON-Dateien werden akzeptiert, die über den Export-Button dieser App erstellt wurden.                                                                                |
+| Problem                                   | Lösung                                                                                                                 |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| App lädt nicht als PWA                    | Aufruf über `http://` oder `https://` nötig, nicht `file://`. Lokalen Webserver starten: `python3 -m http.server 8080` |
+| Favicons fehlen                           | Einige Seiten bieten kein `favicon.ico` – Globus-Symbol als Platzhalter                                                |
+| Keine Favicons bei 192.168.x.x            | HTTPS-Seiten dürfen keine HTTP-Ressourcen laden (Mixed Content) – normales Browserverhalten                            |
+| Auto-Export funktioniert nicht            | Browser-Einstellungen für automatische Downloads prüfen; Auto-Export-Checkbox kontrollieren                            |
+| Besuchszähler nach Reset wiederherstellen | Backup vor dem Reset exportieren, danach wieder importieren                                                            |
+| Daten verschwunden                        | Browser-Cache wurde geleert – künftig regelmäßig exportieren                                                           |
+| Import wird nicht erkannt                 | Nur JSON-Dateien dieser App werden akzeptiert                                                                          |
+| `obsidian://`-Link öffnet nichts          | Obsidian muss installiert und einmal gestartet gewesen sein                                                            |
