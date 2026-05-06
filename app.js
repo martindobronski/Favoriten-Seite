@@ -427,7 +427,10 @@ function renameCategory(oldCategory, newCategory) {
         const current = normalizeCategory(link.category);
         if (current === oldCat) {
             changed = true;
-            return { ...link, category: newCat };
+            return {
+                ...link,
+                category: newCat
+            };
         }
         return link;
     });
@@ -870,7 +873,9 @@ function createTile(link, options = {}) {
 
 function renderCategorySuggestions() {
     const categories = [...categoryOrder].sort((a, b) =>
-        a.localeCompare(b, "de", { sensitivity: "base" })
+        a.localeCompare(b, "de", {
+            sensitivity: "base"
+        })
     );
 
     categorySuggestions.innerHTML = "";
@@ -1355,22 +1360,22 @@ importFileInput.addEventListener("change", async event => {
 
 
         if (parsed.visitCounts && typeof parsed.visitCounts === 'object') {
-           const restored = Object.fromEntries(
-                 Object.entries(parsed.visitCounts)
-                 .filter(([id, count]) => Number.isInteger(count) && count > 0));
+            const restored = Object.fromEntries(
+                Object.entries(parsed.visitCounts)
+                .filter(([id, count]) => Number.isInteger(count) && count > 0));
 
-        if (shouldReplace) {
-           visitCounts = restored;
-        } else {
-        // Beim Zusammenführen: höherer Wert gewinnt
-        for (const [id, count] of Object.entries(restored)) {
-            visitCounts[id] = Math.max(visitCounts[id] || 0, count);
+            if (shouldReplace) {
+                visitCounts = restored;
+            } else {
+                // Beim Zusammenführen: höherer Wert gewinnt
+                for (const [id, count] of Object.entries(restored)) {
+                    visitCounts[id] = Math.max(visitCounts[id] || 0, count);
+                }
+            }
+            saveVisitCounts(visitCounts);
         }
-      }
-        saveVisitCounts(visitCounts);
-    }
 
-    update();
+        update();
     } catch {
         alert("Import fehlgeschlagen. Bitte eine gültige JSON-Datei auswählen.");
     } finally {
