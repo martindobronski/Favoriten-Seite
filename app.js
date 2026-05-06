@@ -827,7 +827,7 @@ function createTile(link, options = {}) {
 
 function renderCategorySuggestions() {
     const categories = [...categoryOrder].sort((a, b) =>
-        a.localeCompare(b, "de", { sensitivity: "base" })  // 👈 neu
+        a.localeCompare(b, "de", { sensitivity: "base" })
     );
 
     categorySuggestions.innerHTML = "";
