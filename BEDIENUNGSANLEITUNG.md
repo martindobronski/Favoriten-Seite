@@ -57,7 +57,7 @@ Anschließend die Schaltfläche **„Hinzufügen"** klicken oder **Enter** drüc
 
 Jede Kachel besitzt einen Bearbeiten-Button (**✏️**). Ein Klick darauf öffnet einen Dialog mit den aktuellen Werten. Dort können Name, URL und Kategorie geändert werden. Mit **„Speichern"** werden die Änderungen übernommen.
 
-> **Hinweis:** Beim Öffnen des Bearbeiten-Dialogs wird ein laufender Auto-Export-Timer gestoppt. Der Timer startet erst nach dem Speichern erneut.
+> **Hinweis:** Beim Öffnen des Bearbeiten-Dialogs wird ein laufender Auto-Export-Timer gestoppt. Der Timer startet erst nach dem Speichern erneut, sodass beliebig viele Bearbeitungen hintereinander möglich sind, ohne einen vorzeitigen Export auszulösen.
 
 ### 3.3 Favorit löschen
 
@@ -115,11 +115,17 @@ Leere Kategorien werden bei aktiver Suche ausgeblendet. Gibt es keine Treffer, w
 
 ## 6. Nutzungsstatistik
 
-Über **„📊 Statistik anzeigen"** wird ein Panel eingeblendet, das alle besuchten Favoriten absteigend nach Aufrufhäufigkeit auflistet. Die ersten drei Plätze werden mit Medaillen-Icons (🥇 🥈 🥉) hervorgehoben.
+### 6.1 Statistik anzeigen
 
-Ein Klick auf **„📊 Statistik ausblenden"** schließt das Panel wieder. Der Button ist deaktiviert, solange noch kein Favorit besucht wurde.
+Über **„📊 Statistik anzeigen"** wird ein Panel eingeblendet, das alle besuchten Favoriten absteigend nach Aufrufhäufigkeit auflistet. Die ersten drei Plätze werden mit Medaillen-Icons (🥇 🥈 🥉) hervorgehoben. Ein Klick auf **„📊 Statistik ausblenden"** schließt das Panel wieder.
 
-> **Hinweis:** Die Besuchszähler werden lokal gespeichert und beim Bereinigen nicht gelöscht, solange der zugehörige Favorit noch existiert.
+Der Button ist deaktiviert, solange noch kein Favorit besucht wurde.
+
+### 6.2 Statistik zurücksetzen
+
+Über **„🔄 Statistik zurücksetzen"** werden alle Besuchszähler nach einer Sicherheitsabfrage auf null gesetzt. Die Kategorie „Am häufigsten besucht" verschwindet daraufhin, bis wieder Links besucht werden.
+
+> **Hinweis:** Vor dem Zurücksetzen empfiehlt sich ein Export – die Besuchszähler sind in der Backup-Datei enthalten und können bei Bedarf über einen Import wiederhergestellt werden.
 
 ---
 
@@ -127,30 +133,32 @@ Ein Klick auf **„📊 Statistik ausblenden"** schließt das Panel wieder. Der 
 
 ### 7.1 Manueller Export
 
-Ein Klick auf **„⬇️ Export Favoriten"** lädt eine JSON-Datei mit dem Namen `favoriten-links.json` herunter. Diese enthält alle Favoriten sowie die gespeicherte Kategorienreihenfolge.
+Ein Klick auf **„⬇️ Export Favoriten"** lädt eine JSON-Datei herunter. Der Dateiname enthält Datum und Uhrzeit des Exports:
+
+```
+favoriten-links-backup-20260506-143022.json
+```
+
+Die Datei enthält alle Favoriten, die Kategorienreihenfolge sowie die Besuchszähler.
 
 ### 7.2 Auto-Export
 
-Die App verfügt über einen automatischen Export-Mechanismus: Nach jeder Änderung (Hinzufügen, Bearbeiten, Löschen, Verschieben) startet ein 5-Sekunden-Timer. Läuft dieser ab, ohne dass weitere Änderungen vorgenommen wurden, wird automatisch eine Sicherungsdatei heruntergeladen.
+Nach jeder Änderung (Hinzufügen, Bearbeiten, Löschen, Verschieben) startet automatisch ein 5-Sekunden-Timer. Läuft dieser ab, ohne dass weitere Änderungen vorgenommen wurden, wird automatisch eine Sicherungsdatei heruntergeladen. Das Dateinamensformat ist identisch mit dem manuellen Export.
 
-Der Dateiname des Auto-Exports enthält Datum, Uhrzeit und die ersten drei Kategorienamen, zum Beispiel:
+Der Auto-Export kann dauerhaft deaktiviert werden. Die Einstellung wird beim nächsten Start der App beibehalten.
 
-```
-favoriten-links-backup-20260506-143022-Nachrichten_Wissen_Tools.json
-```
-
-> **Hinweis:** Der Auto-Export kann durch einen Toggle-Schalter dauerhaft deaktiviert werden. Die Einstellung wird beim nächsten Start der App beibehalten.
+> **Hinweis:** Beim Öffnen des Bearbeiten-Dialogs wird der laufende Timer gestoppt und erst nach dem Speichern neu gestartet.
 
 ### 7.3 Export beim Verlassen
 
-Wenn die App mit ungespeicherten Änderungen geschlossen wird und kein Auto-Export stattgefunden hat, wird beim Verlassen automatisch ein Export-Download ausgelöst. Der Browser zeigt dabei eine Bestätigungsmeldung an.
+Wenn die App mit ungespeicherten Änderungen geschlossen wird und seit der letzten Änderung kein Auto-Export stattgefunden hat, wird beim Verlassen automatisch ein Export-Download ausgelöst. Der Browser zeigt dabei eine Bestätigungsmeldung an.
 
 ### 7.4 Import
 
 Über **„⬆️ Import Favoriten"** kann eine zuvor exportierte JSON-Datei wieder eingelesen werden. Nach Auswahl der Datei erscheint eine Abfrage:
 
-- **Ersetzen:** Alle bestehenden Favoriten werden durch die importierten ersetzt.
-- **Zusammenführen:** Importierte Favoriten werden mit bestehenden zusammengeführt. Duplikate (gleiche ID) werden durch die importierte Version überschrieben.
+- **Ersetzen:** Alle bestehenden Favoriten und Besuchszähler werden durch die importierten ersetzt.
+- **Zusammenführen:** Favoriten werden zusammengeführt. Bei doppelten Einträgen (gleiche ID) gewinnt die importierte Version. Bei Besuchszählern gewinnt jeweils der höhere Wert.
 
 > **Hinweis:** Beim Import werden ungültige Einträge (fehlende Pflichtfelder, ungültige URLs) automatisch herausgefiltert.
 
@@ -158,19 +166,20 @@ Wenn die App mit ungespeicherten Änderungen geschlossen wird und kein Auto-Expo
 
 ## 8. Schaltflächen-Übersicht
 
-| Schaltfläche            | Funktion                                                     |
-| ----------------------- | ------------------------------------------------------------ |
-| Hinzufügen              | Neuen Favoriten mit den eingegebenen Daten speichern         |
-| ↕️ Kategorien sortieren | Dialog zum Umsortieren der Kategorienreihenfolge öffnen      |
-| ⬇️ Export Favoriten     | Alle Favoriten als JSON-Datei herunterladen                  |
-| ⬆️ Import Favoriten     | JSON-Datei mit Favoriten importieren                         |
-| 📊 Statistik anzeigen   | Nutzungsstatistik ein- oder ausblenden                       |
-| ❓ Hilfe                 | Diese Bedienungsanleitung öffnen                             |
-| ✏️ (Kachel)             | Bearbeiten-Dialog für diesen Favoriten öffnen                |
-| 🗑️ (Kachel)            | Diesen Favoriten nach Bestätigung löschen                    |
-| 🏷️ (Kachel)            | Kategorie dieses Favoriten ändern                            |
-| ↔️ (Kachel)             | Kachel per Drag & Drop verschieben                           |
-| 🗑️ (Kategorie)         | Leere Kategorie löschen (nur aktiv wenn keine Kacheln darin) |
+| Schaltfläche              | Funktion                                                        |
+| ------------------------- | --------------------------------------------------------------- |
+| Hinzufügen                | Neuen Favoriten mit den eingegebenen Daten speichern            |
+| ↕️ Kategorien sortieren   | Dialog zum Umsortieren der Kategorienreihenfolge öffnen         |
+| ⬇️ Export Favoriten       | Alle Favoriten inkl. Besuchszähler als JSON-Datei herunterladen |
+| ⬆️ Import Favoriten       | JSON-Datei mit Favoriten und Besuchszählern importieren         |
+| 📊 Statistik anzeigen     | Nutzungsstatistik ein- oder ausblenden                          |
+| 🔄 Statistik zurücksetzen | Alle Besuchszähler nach Bestätigung auf null setzen             |
+| ❓ Hilfe                   | Diese Bedienungsanleitung öffnen                                |
+| ✏️ (Kachel)               | Bearbeiten-Dialog für diesen Favoriten öffnen                   |
+| 🗑️ (Kachel)              | Diesen Favoriten nach Bestätigung löschen                       |
+| 🏷️ (Kachel)              | Kategorie dieses Favoriten ändern                               |
+| ↔️ (Kachel)               | Kachel per Drag & Drop verschieben                              |
+| 🗑️ (Kategorie)           | Leere Kategorie löschen (nur aktiv wenn keine Kacheln darin)    |
 
 ---
 
@@ -189,17 +198,18 @@ Folgende Daten werden gespeichert:
 
 ### 9.1 Speicherlimit
 
-Der `localStorage`-Speicher ist browserseitig begrenzt (typischerweise 5–10 MB). Wird das Limit erreicht, erscheint eine Warnung mit der Aufforderung, sofort einen Export durchzuführen und alte Einträge zu löschen.
+Der `localStorage`-Speicher ist browserseitig begrenzt (typischerweise 5–10 MB). Wird das Limit erreicht, versucht die App zunächst automatisch verwaiste Besuchszähler zu bereinigen. Schlägt auch das fehl, erscheint eine Warnung mit der Aufforderung, sofort einen Export durchzuführen und alte Einträge zu löschen.
 
 ---
 
 ## 10. Häufige Fragen & Fehlerbehebung
 
-| Problem                                          | Lösung                                                                                                                                   |
-| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| App lädt nicht als PWA                           | Die App muss über HTTP/HTTPS aufgerufen werden, nicht über `file://`. Lokalen Webserver starten, z. B. `python3 -m http.server 8080`.    |
-| Favicons werden nicht angezeigt                  | Einige Seiten bieten kein `favicon.ico` an. Ein Globus-Symbol wird als Platzhalter angezeigt.                                            |
-| Keine Favicons bei lokalen Geräten (192.168.x.x) | Wird die App über HTTPS aufgerufen, können HTTP-Adressen aus Sicherheitsgründen keine Favicons laden. Das ist normales Browserverhalten. |
-| Auto-Export lädt keine Datei herunter            | Prüfen, ob der Browser automatische Downloads erlaubt. Ggf. in den Browser-Einstellungen freigeben.                                      |
-| Daten nach Browser-Update weg                    | Daten im `localStorage` können beim Löschen von Browserdaten verloren gehen. Regelmäßig exportieren!                                     |
-| Import-Datei wird nicht erkannt                  | Nur JSON-Dateien werden akzeptiert, die über den Export-Button dieser App erstellt wurden.                                               |
+| Problem                                          | Lösung                                                                                                                                                                    |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| App lädt nicht als PWA                           | Die App muss über HTTP/HTTPS aufgerufen werden, nicht über `file://`. Lokalen Webserver starten, z. B. `python3 -m http.server 8080`.                                     |
+| Favicons werden nicht angezeigt                  | Einige Seiten bieten kein `favicon.ico` an. Ein Globus-Symbol wird als Platzhalter angezeigt.                                                                             |
+| Keine Favicons bei lokalen Geräten (192.168.x.x) | Wird die App über HTTPS aufgerufen, können HTTP-Adressen aus Sicherheitsgründen keine Favicons laden. Das ist normales Browserverhalten.                                  |
+| Auto-Export lädt keine Datei herunter            | Prüfen, ob der Browser automatische Downloads erlaubt. Ggf. in den Browser-Einstellungen freigeben. Außerdem sicherstellen, dass der Auto-Export nicht deaktiviert wurde. |
+| Besuchszähler nach Reset wiederherstellen        | Vor dem Reset einen Export durchführen. Die exportierte JSON-Datei enthält die Besuchszähler und kann nach dem Reset wieder importiert werden.                            |
+| Daten nach Browser-Update weg                    | Daten im `localStorage` können beim Löschen von Browserdaten verloren gehen. Regelmäßig exportieren!                                                                      |
+| Import-Datei wird nicht erkannt                  | Nur JSON-Dateien werden akzeptiert, die über den Export-Button dieser App erstellt wurden.                                                                                |
