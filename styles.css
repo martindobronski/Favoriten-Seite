@@ -11,6 +11,12 @@
   --radius: 14px;
 }
 
+/* Globaler 3D-Kontext für konsistente Tilt-Animationen */
+main {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #0f172a;
@@ -164,6 +170,8 @@ button:hover {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 0.9rem;
+  perspective: 1000px;
+  transform-style: preserve-3d;
 }
 
 .empty-category {
@@ -268,7 +276,9 @@ button:hover {
   box-shadow: var(--tile-shadow);
   border: 1px solid rgba(96, 112, 128, 0.2);
   overflow: hidden;
-  transition: transform 0.12s ease, opacity 0.12s ease, border-color 0.12s ease;
+  transform: translateZ(0);
+  transform-style: preserve-3d;
+  transition: transform 0.25s ease, opacity 0.25s ease, border-color 0.25s ease;
 }
 
 .tile.dragging {
@@ -279,6 +289,32 @@ button:hover {
 
 .tile.drag-over {
   border-color: var(--primary);
+}
+
+.tile:hover {
+  transform: translateY(-6px) rotateX(2deg) rotateY(-2deg);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+}
+
+/* Gemeinsamer 3D-Tilt bei Hover und Fokus (Tiles + Panel-Buttons) */
+.tile:hover,
+.panel-actions button:hover,
+.tile:focus-visible,
+.panel-actions button:focus-visible {
+  transform: translateY(-8px) rotateX(6deg) rotateY(-4deg);
+  will-change: transform;
+}
+
+.tile:focus-visible,
+.panel-actions button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile:hover, .panel-actions button:hover, .tile:focus-visible, .panel-actions button:focus-visible {
+    transform: none;
+  }
 }
 
 .tile-link {
