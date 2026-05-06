@@ -372,7 +372,6 @@ button:hover {
 
 .drag-handle {
   position: relative;
-  border: 1px solid rgba(96, 112, 128, 0.35);
   border-radius: 8px;
   background: transparent;
   color: var(--muted);
@@ -424,7 +423,7 @@ button:hover {
   position: relative;
   background: transparent;
   color: var(--muted);
-  border: 1px solid rgba(96, 112, 128, 0.35);
+  border: none;
   width: 2rem;
   height: 2rem;
   display: inline-flex;
@@ -707,7 +706,7 @@ button:hover {
   position: relative;
   background: transparent;
   color: var(--text);
-  border: 1px solid rgba(96, 112, 128, 0.35);
+  border: none; /* Rahmen entfernt, wie beim Löschen-Symbol */
   width: 2rem;
   height: 2rem;
   display: inline-flex;
@@ -925,4 +924,3 @@ button:hover {
     max-width: 50%;
   }
 }
-
