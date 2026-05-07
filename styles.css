@@ -394,8 +394,8 @@ button:hover {
   content: attr(data-tooltip);
   position: absolute;
   left: 50%;
-  top: calc(100% + 6px);
-  transform: translateX(-50%) translateY(-2px);
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%) translateY(2px);
   background: #0f172a;
   color: #fff;
   font-size: 0.75rem;
@@ -441,8 +441,8 @@ button:hover {
   content: attr(data-tooltip);
   position: absolute;
   left: 50%;
-  top: calc(100% + 6px);
-  transform: translateX(-50%) translateY(-2px);
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%) translateY(2px);
   background: #0f172a;
   color: #fff;
   font-size: 0.75rem;
@@ -485,8 +485,8 @@ button:hover {
   content: attr(data-tooltip);
   position: absolute;
   left: 50%;
-  top: calc(100% + 6px);
-  transform: translateX(-50%) translateY(-2px);
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%) translateY(2px);
   background: #0f172a;
   color: #fff;
   font-size: 0.75rem;
@@ -559,8 +559,8 @@ button:hover {
   content: attr(data-tooltip);
   position: absolute;
   left: 50%;
-  top: calc(100% + 6px);
-  transform: translateX(-50%) translateY(-2px);
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%) translateY(2px);
   background: #0f172a;
   color: #fff;
   font-size: 0.75rem;
