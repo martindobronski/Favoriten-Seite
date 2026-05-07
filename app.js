@@ -745,7 +745,7 @@ function createTile(link, options = {}) {
     dragHandle.className = "drag-handle";
     dragHandle.type = "button";
     dragHandle.textContent = "↔️";
-    dragHandle.dataset.tooltip = "Reihenfolge verschieben";
+    dragHandle.dataset.tooltip = "Kachel innerhalb der Kategorie verschieben";
     dragHandle.draggable = true;
 
     const isCustomScheme = !/^https?:\/\//i.test(link.url);
@@ -788,7 +788,7 @@ function createTile(link, options = {}) {
         const badge = document.createElement("span");
         badge.className = "visit-badge";
         badge.textContent = visitCount > 999 ? "999+" : String(visitCount);
-        badge.dataset.tooltip = `${visitCount} Mal besucht`;
+        badge.dataset.tooltip = `Die Kachel wurde ${visitCount} mal aufgerufen`;
         actionsLeft.append(badge);
     }
 
@@ -796,7 +796,7 @@ function createTile(link, options = {}) {
     deleteBtn.className = "delete-btn";
     deleteBtn.type = "button";
     deleteBtn.textContent = "🗑";
-    deleteBtn.dataset.tooltip = "Löschen";
+    deleteBtn.dataset.tooltip = "Kachel löschen";
     deleteBtn.addEventListener("click", event => {
         event.stopPropagation();
         event.preventDefault();
@@ -809,7 +809,7 @@ function createTile(link, options = {}) {
     changeCategoryBtn.className = "change-category-btn";
     changeCategoryBtn.type = "button";
     changeCategoryBtn.textContent = "🏷️";
-    changeCategoryBtn.dataset.tooltip = "Kategorie ändern";
+    changeCategoryBtn.dataset.tooltip = "Kategoriezuordnung ändern";
     changeCategoryBtn.addEventListener("click", event => {
         event.stopPropagation();
         event.preventDefault();
@@ -820,7 +820,7 @@ function createTile(link, options = {}) {
     editBtn.className = "edit-btn";
     editBtn.type = "button";
     editBtn.textContent = "✏️";
-    editBtn.dataset.tooltip = "Bearbeiten";
+    editBtn.dataset.tooltip = "Kachel bearbeiten";
     editBtn.addEventListener("click", event => {
         event.stopPropagation();
         event.preventDefault();

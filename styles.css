@@ -706,8 +706,7 @@ button:hover {
   content: attr(data-tooltip);
   position: absolute;
   bottom: calc(100% + 4px);
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
   background: #0f172a;
   color: #fff;
   font-size: 0.7rem;
