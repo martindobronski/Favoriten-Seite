@@ -1210,17 +1210,26 @@ if (sortByFreqToggle) {
     });
 }
 
-const themeSelect = document.getElementById('themeSelect');
-if (themeSelect) {
-    const savedTheme = (() => { try { return localStorage.getItem(THEME_KEY) || 'blue'; } catch { return 'blue'; } })();
-    themeSelect.value = savedTheme;
-    document.documentElement.dataset.theme = savedTheme;
-    themeSelect.addEventListener('change', (e) => {
-        const theme = e.target.value;
-        document.documentElement.dataset.theme = theme;
-        try { localStorage.setItem(THEME_KEY, theme); } catch {}
+const savedTheme = (() => { try { return localStorage.getItem(THEME_KEY) || 'blue'; } catch { return 'blue'; } })();
+document.documentElement.dataset.theme = savedTheme;
+document.querySelectorAll('.swatch').forEach(btn => {
+    btn.classList.remove('active');
+    btn.setAttribute('aria-pressed', 'false');
+    if (btn.dataset.theme === savedTheme) {
+        btn.classList.add('active');
+        btn.setAttribute('aria-pressed', 'true');
+    }
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.swatch').forEach(s => {
+            s.classList.remove('active');
+            s.setAttribute('aria-pressed', 'false');
+        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-pressed', 'true');
+        document.documentElement.dataset.theme = btn.dataset.theme;
+        try { localStorage.setItem(THEME_KEY, btn.dataset.theme); } catch {}
     });
-}
+});
 
 hasChanges = false;
 
