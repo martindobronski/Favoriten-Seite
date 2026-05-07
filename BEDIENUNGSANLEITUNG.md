@@ -1,194 +1,236 @@
-# Meine Favoriten – Bedienungsanleitung
+# Bedienungsanleitung – Favoriten-Verwaltung
 
-**Version 0.7 vom 06.05.2026 / © MD. 2026**
+**Version 1.0 – Stand 08.05.2026**
 
 ---
 
 ## 1. Einleitung
 
-„Meine Favoriten" ist eine browserbasierte Web-App zur persönlichen Verwaltung von Links und Lesezeichen. Sie läuft vollständig im Browser, benötigt keine Installation und speichert alle Daten lokal auf dem eigenen Gerät – ohne Cloud, ohne Registrierung.
-
-Die App eignet sich besonders für Personen, die eine feste Sammlung an regelmäßig besuchten Webseiten, internen Tools oder lokalen Diensten übersichtlich und schnell zugänglich haben möchten.
-
-### 1.1 Systemvoraussetzungen
-
-- Moderner Webbrowser (Chrome, Brave, Edge, Firefox oder Safari)
-- Für volle PWA-Funktionalität: Aufruf über HTTP/HTTPS (nicht über `file://`)
-- JavaScript muss aktiviert sein
-
-### 1.2 Progressive Web App (PWA)
-
-Die App kann als Progressive Web App installiert werden. Dadurch erscheint sie wie eine native Desktop- oder Mobilanwendung – mit eigenem Fenster, ohne Browser-Adressleiste und mit Offline-Unterstützung.
-
-> **Tipp:** In Chrome oder Brave erscheint in der Adressleiste ein Install-Symbol (⊕). Ein Klick darauf installiert die App im Startmenü bzw. Launchpad.
+Die Favoriten-Verwaltung ist eine lokale Web-App zum Speichern, Organisieren und Durchsuchen
+Ihrer regelmäßig besuchten Links. Alle Daten verbleiben in Ihrem Browser
+(localStorage) – es wird kein externer Server benötigt.
 
 ---
 
-## 2. Benutzeroberfläche
+## 2. Link hinzufügen
 
-| Bereich         | Beschreibung                                                            |
-| --------------- | ----------------------------------------------------------------------- |
-| Kopfbereich     | Titel und Untertitel der App                                            |
-| Eingabebereich  | Formular zum Hinzufügen neuer Favoriten sowie alle Aktionsschaltflächen |
-| Suchleiste      | Echtzeit-Suche über alle Favoriten                                      |
-| Statistik-Panel | Optionale Anzeige der Nutzungshäufigkeit (ein-/ausblendbar)             |
-| Kachelbereich   | Darstellung aller Favoriten gegliedert nach Kategorien                  |
-| Fußzeile        | Anzeige der App-Version und des Release-Datums                          |
+1. Geben Sie im Panel oben einen **Namen** ein (z. B. „Tagesschau").
+2. Geben Sie die **URL** ein (z. B. `https://www.tagesschau.de`).  
+   *Wird kein Protokoll angegeben (z. B. fehlendes `https://`), wird automatisch
+   `https://` ergänzt.*
+3. Wählen oder tippen Sie eine **Kategorie** (z. B. „Nachrichten").  
+   *Wird keine Kategorie angegeben, wird automatisch „Allgemein" verwendet.*
+4. Klicken Sie auf **„Hinzufügen"** oder drücken Sie die Eingabetaste.
 
----
-
-## 3. Favoriten verwalten
-
-### 3.1 Neuen Favoriten hinzufügen
-
-Im oberen Eingabeformular stehen drei Felder zur Verfügung:
-
-- **Name** – die Bezeichnung, die auf der Kachel angezeigt wird
-- **URL** – die Webadresse (`https://` wird automatisch ergänzt, wenn kein Protokoll angegeben wird)
-- **Kategorie** – Zuordnung zu einer Gruppe; vorhandene Kategorien werden alphabetisch als Vorschläge angezeigt
-
-Anschließend die Schaltfläche **„Hinzufügen"** klicken oder **Enter** drücken.
-
-> **Tipp:** Wird nur eine Kategorie eingetragen (Name und URL leer gelassen), wird eine leere Kategorie erstellt.
-
-> **Tipp:** Neben `https://`-Adressen werden auch benutzerdefinierte Protokolle unterstützt, z. B. `obsidian://open?vault=MeinVault` zum Öffnen lokaler Anwendungen.
-
-### 3.2 Favorit bearbeiten
-
-Jede Kachel besitzt einen Bearbeiten-Button (**✏️**). Ein Klick öffnet einen Dialog mit den aktuellen Werten. Mit **„Speichern"** werden die Änderungen übernommen.
-
-> **Hinweis:** Beim Öffnen des Bearbeiten-Dialogs wird ein laufender Auto-Export-Timer gestoppt und erst nach dem Speichern neu gestartet.
-
-### 3.3 Favorit löschen
-
-Der Löschen-Button (**🗑️**) auf jeder Kachel entfernt den Eintrag nach einer Sicherheitsabfrage dauerhaft.
-
-### 3.4 Kategorie eines Favoriten ändern
-
-Über den Kategorie-Button (**🏷️**) öffnet sich ein alphabetisch sortiertes Kontextmenü aller verfügbaren Kategorien. Ein Klick verschiebt den Favoriten sofort.
-
-### 3.5 Reihenfolge ändern (Drag & Drop)
-
-Über den Drag-Handle (**↔️**) kann die Reihenfolge der Kacheln innerhalb einer Kategorie per Maus verändert werden. Kacheln können auch auf den leeren Bereich einer anderen Kategorie gezogen werden, um sie dorthin zu verschieben.
+**Nur eine Kategorie anlegen:**  
+Lassen Sie Name und URL leer, geben Sie nur den Kategorie-Namen ein und klicken Sie
+auf „Hinzufügen". Die leere Kategorie wird angelegt und kann später mit Links
+befüllt werden.
 
 ---
 
-## 4. Kategorien
+## 3. Kacheln verwalten
 
-### 4.1 Kategorien sortieren
+Jeder gespeicherte Link wird als **Kachel** dargestellt. Beim Überfahren mit der Maus
+werden Aktions-Buttons eingeblendet.
 
-Über **„↕️ Kategorien sortieren"** öffnet sich ein Dialog zur Anpassung der Anzeigereihenfolge:
+### 3.1 Link öffnen
 
-- **Drag & Drop:** Kategorien per Maus verschieben
-- **⇧ / ↑ / ↓ / ⇩:** Schrittweise oder ganz nach oben/unten verschieben
+Klicken Sie auf den Titel oder die URL einer Kachel:
+- **HTTP/HTTPS-Links** werden in einem neuen Tab geöffnet.
+- **Eigene Protokolle** (z. B. `steam:`, `ftp:`) werden im selben Tab geöffnet.
 
-Mit **„Speichern"** übernehmen, **„Abbrechen"** verwirft die Änderungen.
+Der Besuchszähler wird automatisch erhöht.
 
-> **Hinweis:** Die Kategoriesortierung betrifft nur die Anzeigereihenfolge. Die Vorschlagsliste beim Eintippen ist immer alphabetisch sortiert.
+### 3.2 Kachel bearbeiten
+
+Klicken Sie auf das **Bearbeiten-Symbol (Stift)** in der Kachel.  
+Es öffnet sich ein Dialog, in dem Sie Titel, URL und Kategorie ändern können.
+
+### 3.3 Kachel löschen
+
+Klicken Sie auf das **Löschen-Symbol (Mulleimer)** in der Kachel und bestätigen Sie
+die Sicherheitsabfrage.
+
+### 3.4 Kategorie einer Kachel ändern
+
+Klicken Sie auf das **Kategorie-Symbol (Etikett)** in der Kachel.  
+Es öffnet sich ein Kontextmenü mit allen verfügbaren Kategorien. Klicken Sie auf die
+gewünschte Kategorie. Die Kachel wird sofort verschoben.
+
+### 3.5 Kacheln innerhalb einer Kategorie verschieben
+
+Ziehen Sie eine Kachel am **Greifer-Symbol** an die gewünschte Position innerhalb
+derselben Kategorie. Lassen Sie die Kachel los, um sie dort abzulegen.  
+*Ziehen auf einen leeren Bereich der Kategorie platziert die Kachel ans Ende.*
+
+---
+
+## 4. Kategorien verwalten
+
+### 4.1 Kategorie umbenennen
+
+Klicken Sie auf das **Bearbeiten-Symbol (Stift)** im Kategorie-Kopf.  
+Geben Sie den neuen Namen ein und bestätigen Sie. Alle Links in dieser Kategorie
+werden automatisch aktualisiert.
 
 ### 4.2 Kategorie löschen
 
-Im Kategoriekopf kann eine Kategorie über **🗑️** gelöscht werden – aber nur wenn sie keine Kacheln mehr enthält.
+Klicken Sie auf das **Löschen-Symbol (Mulleimer)** im Kategorie-Kopf.  
+Dies ist nur möglich, wenn die Kategorie **keine Links** mehr enthält. Verschieben
+Sie vor dem Löschen vorhandene Links in eine andere Kategorie.
 
-### 4.3 Automatische Kategorie „Am häufigsten besucht"
+### 4.3 Kategorien sortieren
 
-Wird automatisch angezeigt, sobald mindestens ein Favorit besucht wurde. Zeigt bis zu 6 Links und kann nicht manuell bearbeitet werden.
+Klicken Sie auf den Button **„Kategorien sortieren"** im Panel.  
+Es öffnet sich ein Dialog mit allen Kategorien in der aktuellen Reihenfolge.
 
----
+**Möglichkeiten zum Umsortieren:**
+- **Ziehen** Sie eine Kategorie per Drag & Drop an die gewünschte Position.
+- Nutzen Sie die **Pfeil-Buttons** (nach oben / unten) oder die **Springen-Buttons**
+  (ganz nach oben / ganz nach unten).
 
-## 5. Suche
-
-Die Suchleiste filtert die Favoriten in Echtzeit nach Name, URL und Kategorie. Die Suchleiste wird beim Start automatisch fokussiert.
-
----
-
-## 6. Nutzungsstatistik
-
-### 6.1 Statistik anzeigen
-
-**„📊 Statistik"** blendet ein Panel mit allen besuchten Favoriten sortiert nach Aufrufhäufigkeit ein. Die Top 3 werden mit 🥇 🥈 🥉 hervorgehoben. Der Button ist deaktiviert, solange kein Favorit besucht wurde.
-
-### 6.2 Zähler zurücksetzen
-
-**„🔄 Zähler reset"** setzt alle Besuchszähler nach einer Sicherheitsabfrage auf null.
-
-> **Hinweis:** Vor dem Zurücksetzen empfiehlt sich ein Export – die Besuchszähler sind in der Backup-Datei enthalten und können per Import wiederhergestellt werden.
+Bestätigen Sie mit **„Speichern"** oder verwerfen Sie die Änderungen mit
+**„Abbrechen"**.
 
 ---
 
-## 7. Export und Import
+## 5. Besuchszähler und Statistik
 
-### 7.1 Manueller Export
+Jeder Link hat einen internen Besuchszähler, der bei jedem Klick auf den Link
+erhöht wird.
 
-**„⬇️ Export"** lädt eine JSON-Datei mit Favoriten, Kategorienreihenfolge und Besuchszählern herunter. Dateiname-Format:
+### 5.1 Besuchszähler anzeigen
 
-```
-favoriten-links-backup-20260506-143022.json
-```
+Wenn ein Link mindestens einmal besucht wurde, erscheint rechts oben in der Kachel
+ein **Badge** mit der Anzahl der Besuche. Fahren Sie mit der Maus darüber, um den
+genauen Zählerstand zu sehen.
 
-### 7.2 Auto-Export
+### 5.2 Besuchszähler einer einzelnen Kachel zurücksetzen
 
-Nach jeder Änderung startet ein 5-Sekunden-Timer. Läuft er ab, wird automatisch eine Sicherungsdatei heruntergeladen. Die Auto-Export-Checkbox schaltet diese Funktion dauerhaft ein oder aus – die Einstellung wird gespeichert.
+Klicken Sie auf das **Zurücksetzen-Symbol** in der Kachel (sichtbar nur bei
+Kacheln mit Besuchen) und bestätigen Sie den Dialog.
 
-### 7.3 Export beim Verlassen
+### 5.3 Alle Besuchszähler zurücksetzen
 
-Beim Schließen der App mit ungespeicherten Änderungen (und ohne vorangegangenen Auto-Export) wird automatisch ein Export ausgelöst.
+Klicken Sie im Panel auf **„Zähler reset"** und bestätigen Sie die Abfrage.
+Alle Besuchszähler werden auf 0 gesetzt.
 
-### 7.4 Import
+### 5.4 Statistik anzeigen
 
-**„⬆️ Import"** liest eine exportierte JSON-Datei ein. Anschließend Auswahl:
+Klicken Sie auf **„Statistik"** im Panel. Es öffnet sich eine detaillierte
+Besuchsstatistik:
+- Alle besuchten Links, absteigend sortiert nach Anzahl der Aufrufe
+- Balkendiagramm zur visuellen Darstellung der Besuchshäufigkeit
+- Die Top 3 sind mit Medaillen-Symbolen gekennzeichnet
 
-- **Ersetzen:** Alle bestehenden Daten werden ersetzt.
-- **Zusammenführen:** Daten werden zusammengeführt; bei Duplikaten gewinnt die importierte Version, bei Besuchszählern der höhere Wert.
+Ein erneuter Klick auf **„Statistik"** blendet die Ansicht wieder aus.
+
+### 5.5 Meistbesuchte Links
+
+Die Kategorie **„Am häufigsten besucht"** wird automatisch angezeigt und enthält
+die sechs am häufigsten aufgerufenen Links. Diese Sektion wird dynamisch berechnet
+und kann nicht manuell bearbeitet werden.
+
+### 5.6 Sortierung nach Häufigkeit
+
+Aktivieren Sie den Toggle **„Häufigkeit"** im Panel.  
+Die Kacheln werden dann innerhalb jeder Kategorie absteigend nach Besuchszahlen
+sortiert (die meistbesuchten zuerst). Die Einstellung wird gespeichert.
 
 ---
 
-## 8. Schaltflächen-Übersicht
+## 6. Farbschema umschalten
 
-| Schaltfläche            | Funktion                                   |
-| ----------------------- | ------------------------------------------ |
-| Hinzufügen              | Neuen Favoriten speichern                  |
-| ↕️ Kategorien sortieren | Anzeigereihenfolge der Kategorien anpassen |
-| ⬇️ Export               | Backup als JSON-Datei herunterladen        |
-| ⬆️ Import               | JSON-Datei importieren                     |
-| 📊 Statistik            | Nutzungsstatistik ein-/ausblenden          |
-| 🔄 Zähler reset         | Alle Besuchszähler zurücksetzen            |
-| Auto-Export ☑️          | Automatischen Export ein-/ausschalten      |
-| ❓ Hilfe                 | Bedienungsanleitung öffnen (PDF)           |
-| ✏️ (Kachel)             | Favorit bearbeiten                         |
-| 🗑️ (Kachel)            | Favorit löschen                            |
-| 🏷️ (Kachel)            | Kategorie ändern                           |
-| ↔️ (Kachel)             | Reihenfolge per Drag & Drop ändern         |
-| 🗑️ (Kategorie)         | Leere Kategorie löschen                    |
+In der Kopfzeile rechts befinden sich zwei **farbige Kreise**:
+
+| Kreis | Farbschema | Beschreibung |
+|-------|-----------|-------------|
+| Blau | Blau-Schema | Dunkelblauer Hintergrund, blaue Akzente (Standard) |
+| Grün | Grün-Schema | Fast-schwarzer Hintergrund mit Grünstich, grüne Akzente |
+
+Klicken Sie auf den gewünschten Kreis. Die Auswahl wird sofort übernommen und
+beim nächsten Laden der Seite wiederhergestellt.
+
+---
+
+## 7. Suchen und Filtern
+
+Die Suchleiste unter dem Panel filtert die angezeigten Kacheln in Echtzeit.
+Es wird nach **Titel**, **URL** und **Kategorie** gesucht.  
+Kategorien, die keine Treffer enthalten, werden ausgeblendet.  
+*Die Suchleiste ist beim Laden der Seite automatisch fokussiert.*
+
+---
+
+## 8. Import und Export
+
+### 8.1 Export (Backup)
+
+Klicken Sie auf **„Export"** im Panel.  
+Es wird eine JSON-Datei mit folgendem Namen heruntergeladen:
+`favoriten-links-backup-YYYYMMDD-HHmmss.json`
+
+Die Datei enthält:
+- Alle Links mit Titel, URL, Kategorie und ID
+- Die benutzerdefinierte Kategorien-Reihenfolge
+- Alle Besuchszähler
+
+### 8.2 Import
+
+Klicken Sie auf **„Import"** und wählen Sie eine zuvor exportierte JSON-Datei aus.
+
+**Es erscheint ein Dialog mit zwei Optionen:**
+
+- **Ersetzen** – Alle aktuellen Daten werden verworfen und durch die importierten
+  Daten ersetzt.
+- **Zusammenführen** – Die importierten Daten werden mit den vorhandenen Daten
+  zusammengeführt:
+  - Bei gleicher ID gewinnt der importierte Datensatz
+  - Neue Kategorien werden vorne eingefügt
+  - Besuchszähler: der höhere Wert gewinnt
+
+### 8.3 Auto-Export
+
+Der **Auto-Export** ist standardmäßig aktiviert. Er erstellt 5 Sekunden nach der
+letzten Änderung automatisch ein JSON-Backup und löst einen Download aus.
+
+- **Deaktivieren**: Entfernen Sie den Haken bei **„Auto-Export"** im Panel.
+- Die Einstellung wird gespeichert.
+
+*Hinweis: Auch beim Schließen der Seite wird ein finaler Auto-Export durchgeführt,
+falls seit dem letzten Export Änderungen vorliegen.*
 
 ---
 
 ## 9. Datenspeicherung
 
-Alle Daten werden ausschließlich im `localStorage` des Browsers gespeichert. Kein Server, keine Cloud.
+Alle Daten werden ausschließlich im **localStorage** Ihres Browsers gespeichert:
 
-Gespeicherte Daten:
+| Schlüssel | Inhalt |
+|-----------|--------|
+| `favorite-links-v1` | Alle Links (Titel, URL, Kategorie, ID) |
+| `favorite-category-order-v1` | Reihenfolge der Kategorien |
+| `favorite-visit-counts-v1` | Besuchszähler pro Link-ID |
+| `favorite-sort-by-freq-v1` | Sortierung-nach-Häufigkeit Einstellung |
+| `favorite-theme-v1` | Ausgewähltes Farbschema |
+| `autoExportEnabled` | Auto-Export Ein/Aus |
 
-- Favoritenliste (Name, URL, Kategorie)
-- Kategorienreihenfolge
-- Besuchszähler je Favorit
-- Auto-Export-Einstellung (ein/aus)
-
-> **Wichtig:** Beim Löschen des Browser-Caches gehen alle Daten verloren. Regelmäßiger Export wird dringend empfohlen.
-
-Das Speicherlimit beträgt browserseitig typischerweise 5–10 MB. Bei Überschreitung versucht die App zunächst eine automatische Bereinigung verwaister Zähler; schlägt das fehl, erscheint eine Warnung.
+**Hinweise:**
+- Die Daten sind browser-spezifisch und werden nicht automatisch zwischen
+  verschiedenen Geräten synchronisiert.
+- Ein regelmäßiges Export-Backup wird empfohlen.
+- Bei vollem localStorage werden automatisch verwaiste Besuchszähler-Einträge
+  aufgeräumt.
 
 ---
 
-## 10. Häufige Fragen & Fehlerbehebung
+## 10. Tipps und Hinweise
 
-| Problem                                   | Lösung                                                                                                                 |
-| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| App lädt nicht als PWA                    | Aufruf über `http://` oder `https://` nötig, nicht `file://`. Lokalen Webserver starten: `python3 -m http.server 8080` |
-| Favicons fehlen                           | Einige Seiten bieten kein `favicon.ico` – Globus-Symbol als Platzhalter                                                |
-| Keine Favicons bei 192.168.x.x            | HTTPS-Seiten dürfen keine HTTP-Ressourcen laden (Mixed Content) – normales Browserverhalten                            |
-| Auto-Export funktioniert nicht            | Browser-Einstellungen für automatische Downloads prüfen; Auto-Export-Checkbox kontrollieren                            |
-| Besuchszähler nach Reset wiederherstellen | Backup vor dem Reset exportieren, danach wieder importieren                                                            |
-| Daten verschwunden                        | Browser-Cache wurde geleert – künftig regelmäßig exportieren                                                           |
-| Import wird nicht erkannt                 | Nur JSON-Dateien dieser App werden akzeptiert                                                                          |
-| `obsidian://`-Link öffnet nichts          | Obsidian muss installiert und einmal gestartet gewesen sein                                                            |
+- **Favicons**: Zu jedem Link wird automatisch das Favicon der Webseite geladen.
+  Bei HTTP-Links auf einer HTTPS-Seite wird das Favicon aus Sicherheitsgründen
+  nicht geladen; stattdessen erscheint ein Platzhalter.
+- **Tooltips**: Alle Bedienelemente haben kurze Erklärungen, die nach einer
+  halben Sekunde Verzögerung eingeblendet werden.
+- **Erste Schritte**: Direkt nach der ersten Installation sind zwei Beispiel-Links
+  (Tagesschau, Wikipedia) vorinstalliert.

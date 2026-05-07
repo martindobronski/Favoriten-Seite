@@ -8,3 +8,11 @@ aktuellen Tagesdatums sein.  
 Erstelle zusätzlich eine Datei im PDF Format, die den gleichen Inhalt der
 Markdown Datei enthält.
 Falls die Datei schon existiert, aktualisiere den Inhalt und überschreibe sie.
+
+---
+
+Erstelle mir aus den aktuellen Quellen eine Bedienungsanleitung im Markdown
+und im pdf Format.
+Die Dateien sollen BEDIENUNGSANLEITUNG.md und BEDIENUNGSANLEITUNG.pdf
+heissen und falls bereits vorhanden, sollen sie überschrieben werden.
+Es sollen alle Vorteile und Funktionalitäten ausführlich erläutert werden.
