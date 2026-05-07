@@ -2,6 +2,7 @@ const STORAGE_KEY = "favorite-links-v1";
 const CATEGORY_ORDER_KEY = "favorite-category-order-v1";
 const VISIT_COUNTS_KEY = "favorite-visit-counts-v1";
 const SORT_BY_FREQ_KEY = "favorite-sort-by-freq-v1";
+const THEME_KEY = "favorite-theme-v1";
 const MOST_VISITED_CATEGORY = "Am häufigsten besucht";
 const MOST_VISITED_LIMIT = 6;
 
@@ -1206,6 +1207,18 @@ if (sortByFreqToggle) {
         sortByFreq = !!e.target.checked;
         try { localStorage.setItem(SORT_BY_FREQ_KEY, String(sortByFreq)); } catch {}
         render();
+    });
+}
+
+const themeSelect = document.getElementById('themeSelect');
+if (themeSelect) {
+    const savedTheme = (() => { try { return localStorage.getItem(THEME_KEY) || 'blue'; } catch { return 'blue'; } })();
+    themeSelect.value = savedTheme;
+    document.documentElement.dataset.theme = savedTheme;
+    themeSelect.addEventListener('change', (e) => {
+        const theme = e.target.value;
+        document.documentElement.dataset.theme = theme;
+        try { localStorage.setItem(THEME_KEY, theme); } catch {}
     });
 }
 

@@ -13,9 +13,17 @@
 </head>
 <body>
   <main>
-    <header class="page-header">
-      <h1 class="headerClass">Favoriten</h1>
-      <p class="intro">der regelmäßig besuchten Seiten</p>
+    <header class="page-header" style="justify-content:space-between;align-items:center;">
+      <div style="display:flex;align-items:baseline;gap:0.85rem;flex-wrap:wrap;">
+        <h1 class="headerClass">Favoriten</h1>
+        <p class="intro">der regelmäßig besuchten Seiten</p>
+      </div>
+      <label class="secondary-btn" style="display:inline-flex;align-items:center;gap:6px;margin:0;" data-tooltip="Farbschema wechseln">
+        <select id="themeSelect" style="background:transparent;border:none;color:inherit;font:inherit;font-weight:600;cursor:pointer;padding:0;margin:0;outline:none;">
+          <option value="blue">Blau</option>
+          <option value="green">Grün</option>
+        </select>
+      </label>
     </header>
 
     <section class="panel">

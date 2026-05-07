@@ -1,24 +1,23 @@
 :root {
-  color-scheme: light dark;
-  --bg: #f4f6f8;
-  --surface: #ffffff;
-  --text: #1f2933;
-  --muted: #607080;
+  color-scheme: dark;
+  --bg: #0a1628;
+  --surface: #0f1f3a;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
   --primary: #2563eb;
   --primary-hover: #1d4ed8;
-  --danger: #dc2626;
-  --tile-shadow: 0 10px 20px rgba(31, 41, 51, 0.08);
+  --primary-rgb: 37, 99, 235;
+  --danger: #ef4444;
+  --tile-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
   --radius: 14px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0f172a;
-    --surface: #111827;
-    --text: #f3f4f6;
-    --muted: #9ca3af;
-    --tile-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
-  }
+[data-theme="green"] {
+  --primary: #4caf50;
+  --primary-hover: #388e3c;
+  --primary-rgb: 76, 175, 80;
+  --bg: #0a1a0b;
+  --surface: #1c1c1f;
 }
 
 * {
@@ -189,13 +188,13 @@ button:hover {
   margin-bottom: 0.65rem;
   padding: 0.55rem 0.7rem;
   border-radius: 10px;
-  background: rgba(37, 99, 235, 0.12);
-  border: 1px solid rgba(37, 99, 235, 0.25);
+  background: rgba(var(--primary-rgb), 0.12);
+  border: 1px solid rgba(var(--primary-rgb), 0.25);
 }
 
 .automatic-category-header {
-  background: rgba(37, 99, 235, 0.18);
-  border-color: rgba(37, 99, 235, 0.4);
+  background: rgba(var(--primary-rgb), 0.18);
+  border-color: rgba(var(--primary-rgb), 0.4);
 }
 
 .category-header-actions {
@@ -271,7 +270,7 @@ button:hover {
 .tile:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 24px rgba(31, 41, 51, 0.10);
-  border-color: rgba(37, 99, 235, 0.28);
+  border-color: rgba(var(--primary-rgb), 0.28);
 }
 
 .tile:hover .tile-title {
@@ -355,7 +354,7 @@ button:hover {
   height: 1.5rem;
   padding: 0 0.35rem;
   border-radius: 999px;
-  background: rgba(37, 99, 235, 0.12);
+  background: rgba(var(--primary-rgb), 0.12);
   color: var(--primary);
   font-size: 0.72rem;
   font-weight: 700;
@@ -687,11 +686,13 @@ button:hover {
 
 /* ── Tooltip für Panel-Buttons ──────────────────────────── */
 
-.panel-actions .secondary-btn[data-tooltip] {
+.panel-actions .secondary-btn[data-tooltip],
+.page-header .secondary-btn[data-tooltip] {
   position: relative;
 }
 
-.panel-actions .secondary-btn[data-tooltip]::after {
+.panel-actions .secondary-btn[data-tooltip]::after,
+.page-header .secondary-btn[data-tooltip]::after {
   content: attr(data-tooltip);
   position: absolute;
   top: calc(100% + 6px);
@@ -709,7 +710,8 @@ button:hover {
   transition: opacity 0.08s ease;
 }
 
-.panel-actions .secondary-btn[data-tooltip]:hover::after {
+.panel-actions .secondary-btn[data-tooltip]:hover::after,
+.page-header .secondary-btn[data-tooltip]:hover::after {
   opacity: 1;
   transition-delay: 0.5s;
 }
@@ -889,7 +891,7 @@ button:hover {
   padding: 1.5rem;
   box-shadow: var(--tile-shadow);
   margin-bottom: 2rem;
-  border: 1px solid rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(var(--primary-rgb), 0.1);
 }
 
 .stats-header {
@@ -897,7 +899,7 @@ button:hover {
   justify-content: space-between;
   align-items: baseline;
   margin-bottom: 1.2rem;
-  border-bottom: 2px solid rgba(37, 99, 235, 0.1);
+  border-bottom: 2px solid rgba(var(--primary-rgb), 0.1);
   padding-bottom: 0.5rem;
   flex-wrap: wrap;
   gap: 0.5rem;
@@ -930,7 +932,7 @@ button:hover {
 }
 
 .stat-row:hover {
-  background: rgba(37, 99, 235, 0.05);
+  background: rgba(var(--primary-rgb), 0.05);
 }
 
 /* Top 6 Highlights */
@@ -971,7 +973,7 @@ button:hover {
   left: 0;
   top: 0;
   bottom: 0;
-  background: linear-gradient(90deg, rgba(37, 99, 235, 0.2), var(--primary));
+  background: linear-gradient(90deg, rgba(var(--primary-rgb), 0.2), var(--primary));
   z-index: 1;
   transition: width 0.5s ease-out;
 }
@@ -1017,7 +1019,7 @@ button:hover {
     color: #60a5fa;
   }
   .stat-row:hover {
-    background: rgba(37, 99, 235, 0.15);
+    background: rgba(var(--primary-rgb), 0.15);
   }
 }
 
