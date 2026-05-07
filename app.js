@@ -613,7 +613,7 @@ function renderSortCategoriesList() {
         const handle = document.createElement("span");
         handle.className = "sort-category-handle";
         handle.textContent = "≡";
-        handle.title = "Kategorie ziehen";
+        handle.dataset.tooltip = "Kategorie ziehen";
         handle.setAttribute("aria-hidden", "true");
 
         const label = document.createElement("span");
@@ -625,7 +625,7 @@ function renderSortCategoriesList() {
         moveTopBtn.className = "sort-icon-btn";
         moveTopBtn.textContent = "⇧";
         moveTopBtn.disabled = index === 0;
-        moveTopBtn.title = "Ganz nach oben";
+        moveTopBtn.dataset.tooltip = "Ganz nach oben";
         moveTopBtn.addEventListener("click", () => movePendingCategoryToStart(index));
 
         const moveUpBtn = document.createElement("button");
@@ -633,7 +633,7 @@ function renderSortCategoriesList() {
         moveUpBtn.className = "sort-icon-btn";
         moveUpBtn.textContent = "↑";
         moveUpBtn.disabled = index === 0;
-        moveUpBtn.title = "Eine Position nach oben";
+        moveUpBtn.dataset.tooltip = "Eine Position nach oben";
         moveUpBtn.addEventListener("click", () => movePendingCategory(index, index - 1));
 
         const moveDownBtn = document.createElement("button");
@@ -641,7 +641,7 @@ function renderSortCategoriesList() {
         moveDownBtn.className = "sort-icon-btn";
         moveDownBtn.textContent = "↓";
         moveDownBtn.disabled = index === pendingCategoryOrder.length - 1;
-        moveDownBtn.title = "Eine Position nach unten";
+        moveDownBtn.dataset.tooltip = "Eine Position nach unten";
         moveDownBtn.addEventListener("click", () => movePendingCategory(index, index + 1));
 
         const moveBottomBtn = document.createElement("button");
@@ -649,7 +649,7 @@ function renderSortCategoriesList() {
         moveBottomBtn.className = "sort-icon-btn";
         moveBottomBtn.textContent = "⇩";
         moveBottomBtn.disabled = index === pendingCategoryOrder.length - 1;
-        moveBottomBtn.title = "Ganz nach unten";
+        moveBottomBtn.dataset.tooltip = "Ganz nach unten";
         moveBottomBtn.addEventListener("click", () => movePendingCategoryToEnd(index));
 
         item.addEventListener("dragstart", event => {
@@ -745,7 +745,7 @@ function createTile(link, options = {}) {
     dragHandle.className = "drag-handle";
     dragHandle.type = "button";
     dragHandle.textContent = "↔️";
-    dragHandle.title = "Reihenfolge verschieben";
+    dragHandle.dataset.tooltip = "Reihenfolge verschieben";
     dragHandle.draggable = true;
 
     const isCustomScheme = !/^https?:\/\//i.test(link.url);
@@ -788,7 +788,7 @@ function createTile(link, options = {}) {
         const badge = document.createElement("span");
         badge.className = "visit-badge";
         badge.textContent = visitCount > 999 ? "999+" : String(visitCount);
-        badge.title = `${visitCount} Mal besucht`;
+        badge.dataset.tooltip = `${visitCount} Mal besucht`;
         actionsLeft.append(badge);
     }
 
@@ -796,7 +796,7 @@ function createTile(link, options = {}) {
     deleteBtn.className = "delete-btn";
     deleteBtn.type = "button";
     deleteBtn.textContent = "🗑";
-    deleteBtn.title = "Löschen";
+    deleteBtn.dataset.tooltip = "Löschen";
     deleteBtn.addEventListener("click", event => {
         event.stopPropagation();
         event.preventDefault();
@@ -809,7 +809,7 @@ function createTile(link, options = {}) {
     changeCategoryBtn.className = "change-category-btn";
     changeCategoryBtn.type = "button";
     changeCategoryBtn.textContent = "🏷️";
-    changeCategoryBtn.title = "Kategorie ändern";
+    changeCategoryBtn.dataset.tooltip = "Kategorie ändern";
     changeCategoryBtn.addEventListener("click", event => {
         event.stopPropagation();
         event.preventDefault();
@@ -820,7 +820,7 @@ function createTile(link, options = {}) {
     editBtn.className = "edit-btn";
     editBtn.type = "button";
     editBtn.textContent = "✏️";
-    editBtn.title = "Bearbeiten";
+    editBtn.dataset.tooltip = "Bearbeiten";
     editBtn.addEventListener("click", event => {
         event.stopPropagation();
         event.preventDefault();
@@ -913,7 +913,7 @@ function renderCategorySection(category, items, options = {}) {
         renameCategoryBtn.className = "rename-category-btn delete-category-btn";
         renameCategoryBtn.type = "button";
         renameCategoryBtn.textContent = "✏️";
-        renameCategoryBtn.title = "Kategorie umbenennen";
+        renameCategoryBtn.dataset.tooltip = "Kategorie umbenennen";
         renameCategoryBtn.addEventListener("click", event => {
             event.preventDefault();
             event.stopPropagation();
@@ -932,7 +932,7 @@ function renderCategorySection(category, items, options = {}) {
         deleteCategoryBtn.className = "delete-category-btn";
         deleteCategoryBtn.type = "button";
         deleteCategoryBtn.textContent = "🗑";
-        deleteCategoryBtn.title = "Kategorie löschen";
+        deleteCategoryBtn.dataset.tooltip = "Kategorie löschen";
         deleteCategoryBtn.disabled = items.length > 0;
         deleteCategoryBtn.addEventListener("click", event => {
             event.preventDefault();
