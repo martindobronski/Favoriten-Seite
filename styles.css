@@ -245,16 +245,15 @@ button:hover {
   border-radius: 4px;
   white-space: nowrap;
   opacity: 0;
-  transform: translateY(2px);
-  transition: opacity 0.08s ease, transform 0.08s ease;
+  transition: opacity 0.08s ease;
   pointer-events: none;
-  z-index: 2;
+  z-index: 999;
 }
 
 .delete-category-btn:hover::after,
 .delete-category-btn:focus-visible::after {
   opacity: 1;
-  transform: translateY(0);
+  transition-delay: 0.5s;
 }
 
 /* ── Tile ───────────────────────────────────────────────── */
@@ -393,7 +392,6 @@ button:hover {
   position: absolute;
   left: 50%;
   bottom: calc(100% + 6px);
-  transform: translateX(-50%) translateY(2px);
   background: #0f172a;
   color: #fff;
   font-size: 0.7rem;
@@ -401,7 +399,7 @@ button:hover {
   border-radius: 4px;
   white-space: nowrap;
   opacity: 0;
-  transition: opacity 0.08s ease, transform 0.08s ease;
+  transition: opacity 0.08s ease;
   pointer-events: none;
   z-index: 999;
 }
@@ -409,7 +407,6 @@ button:hover {
 .drag-handle:hover::after,
 .drag-handle:focus-visible::after {
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
   transition-delay: 0.5s;
 }
 
@@ -439,7 +436,6 @@ button:hover {
   position: absolute;
   left: 50%;
   bottom: calc(100% + 6px);
-  transform: translateX(-50%) translateY(2px);
   background: #0f172a;
   color: #fff;
   font-size: 0.7rem;
@@ -447,7 +443,7 @@ button:hover {
   border-radius: 4px;
   white-space: nowrap;
   opacity: 0;
-  transition: opacity 0.08s ease, transform 0.08s ease;
+  transition: opacity 0.08s ease;
   pointer-events: none;
   z-index: 999;
 }
@@ -455,7 +451,6 @@ button:hover {
 .change-category-btn:hover::after,
 .change-category-btn:focus-visible::after {
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
   transition-delay: 0.5s;
 }
 
@@ -482,7 +477,6 @@ button:hover {
   position: absolute;
   left: 50%;
   bottom: calc(100% + 6px);
-  transform: translateX(-50%) translateY(2px);
   background: #0f172a;
   color: #fff;
   font-size: 0.7rem;
@@ -490,7 +484,7 @@ button:hover {
   border-radius: 4px;
   white-space: nowrap;
   opacity: 0;
-  transition: opacity 0.08s ease, transform 0.08s ease;
+  transition: opacity 0.08s ease;
   pointer-events: none;
   z-index: 999;
 }
@@ -498,7 +492,6 @@ button:hover {
 .edit-btn:hover::after,
 .edit-btn:focus-visible::after {
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
   transition-delay: 0.5s;
 }
 
@@ -555,7 +548,6 @@ button:hover {
   position: absolute;
   left: 50%;
   bottom: calc(100% + 6px);
-  transform: translateX(-50%) translateY(2px);
   background: #0f172a;
   color: #fff;
   font-size: 0.7rem;
@@ -563,7 +555,7 @@ button:hover {
   border-radius: 4px;
   white-space: nowrap;
   opacity: 0;
-  transition: opacity 0.08s ease, transform 0.08s ease;
+  transition: opacity 0.08s ease;
   pointer-events: none;
   z-index: 999;
 }
@@ -571,7 +563,6 @@ button:hover {
 .delete-btn:hover::after,
 .delete-btn:focus-visible::after {
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
   transition-delay: 0.5s;
 }
 
@@ -806,8 +797,7 @@ button:hover {
   border-radius: 4px;
   white-space: nowrap;
   opacity: 0;
-  transform: translateY(2px);
-  transition: opacity 0.08s ease, transform 0.08s ease;
+  transition: opacity 0.08s ease;
   pointer-events: none;
   z-index: 10;
 }
@@ -815,18 +805,17 @@ button:hover {
 .sort-icon-btn:hover::after,
 .sort-icon-btn:focus-visible::after {
   opacity: 1;
-  transform: translateY(0);
+  transition-delay: 0.5s;
 }
 
 .sort-category-item:first-child .sort-icon-btn::after {
   top: calc(100% + 14px);
   bottom: auto;
-  transform: translateY(-2px);
 }
 
 .sort-category-item:first-child .sort-icon-btn:hover::after,
 .sort-category-item:first-child .sort-icon-btn:focus-visible::after {
-  transform: translateY(0);
+  transition-delay: 0.5s;
 }
 
 .sort-icon-btn:hover {
