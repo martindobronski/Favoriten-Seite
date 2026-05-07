@@ -767,6 +767,8 @@ function createTile(link, options = {}) {
         });
     }
 
+    const visitCount = visitCounts[link.id] || 0;
+
     const titleRow = document.createElement("div");
     titleRow.className = "tile-title-row";
     const title = document.createElement("div");
@@ -783,7 +785,7 @@ function createTile(link, options = {}) {
 
     const actionsLeft = document.createElement("span");
     actionsLeft.className = "tile-actions-spacer";
-    const visitCount = visitCounts[link.id] || 0;
+
     if (visitCount > 0) {
         const badge = document.createElement("span");
         badge.className = "visit-badge";
@@ -800,6 +802,7 @@ function createTile(link, options = {}) {
     resetVisitBtn.addEventListener("click", event => {
         event.stopPropagation();
         event.preventDefault();
+        if (!confirm(`Besuchszähler für „${link.title}" wirklich zurücksetzen?`)) return;
         visitCounts[link.id] = 0;
         saveVisitCounts(visitCounts);
         update();
