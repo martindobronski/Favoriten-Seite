@@ -1002,7 +1002,7 @@ function renderTopStats() {
         if (toggleStatsBtn) {
             toggleStatsBtn.textContent = "📊 Statistik anzeigen";
             toggleStatsBtn.disabled = true;
-            toggleStatsBtn.title = "Keine besuchten Links vorhanden";
+            toggleStatsBtn.title = "";
         }
         statsVisible = false; // Reset status
         return;
@@ -1011,7 +1011,7 @@ function renderTopStats() {
     // Button aktivieren, wenn Daten da sind
     if (toggleStatsBtn) {
         toggleStatsBtn.disabled = false;
-        toggleStatsBtn.title = "Statistik ein- oder ausblenden";
+        toggleStatsBtn.title = "";
         // Text nur aktualisieren, wenn er nicht schon korrekt ist
         const expectedText = statsVisible ? "📊 Statistik ausblenden" : "📊 Statistik anzeigen";
         if (toggleStatsBtn.textContent !== expectedText) {
