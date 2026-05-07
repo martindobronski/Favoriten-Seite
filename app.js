@@ -792,6 +792,19 @@ function createTile(link, options = {}) {
         actionsLeft.append(badge);
     }
 
+    const resetVisitBtn = document.createElement("button");
+    resetVisitBtn.className = "reset-visit-btn";
+    resetVisitBtn.type = "button";
+    resetVisitBtn.textContent = "🔄";
+    resetVisitBtn.dataset.tooltip = "Besuchszähler zurücksetzen";
+    resetVisitBtn.addEventListener("click", event => {
+        event.stopPropagation();
+        event.preventDefault();
+        visitCounts[link.id] = 0;
+        saveVisitCounts(visitCounts);
+        update();
+    });
+
     const deleteBtn = document.createElement("button");
     deleteBtn.className = "delete-btn";
     deleteBtn.type = "button";
@@ -863,6 +876,9 @@ function createTile(link, options = {}) {
 
     anchor.append(titleRow, url);
     actions.append(actionsLeft);
+    if (visitCount > 0) {
+        actions.append(resetVisitBtn);
+    }
     if (!isAutomatic) {
         actions.append(dragHandle);
     }
