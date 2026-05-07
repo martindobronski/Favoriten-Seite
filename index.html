@@ -7,8 +7,7 @@
   <link rel="stylesheet" href="./styles.css">
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <style>
-    /* Ensure the action bar stays on a single line and items do not wrap */
-    .panel-actions { white-space: nowrap; display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 8px; align-items: center; }
+    .panel-actions { white-space: nowrap; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
     .panel-actions > * { flex: 0 0 auto; }
   </style>
 </head>
@@ -27,18 +26,22 @@
         <datalist id="categorySuggestions"></datalist>
         <button type="submit">Hinzufügen</button>
       </form>
-      <div class="panel-actions" style="display:flex; flex-wrap:nowrap; gap:8px; align-items:center; min-width: max-content; overflow-x:auto; white-space: nowrap;">
+      <div class="panel-actions" style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; min-width: max-content; white-space: nowrap;">
         <!-- Icons hinzugefügt -->
-        <button id="sortCategoriesBtn" type="button" class="secondary-btn">↕️ Kategorien sortieren</button>
-        <button id="exportBtn" type="button" class="secondary-btn">⬇️ Export</button>
-        <button id="importBtn" type="button" class="secondary-btn">⬆️ Import</button>
-        <button id="toggleStatsBtn" type="button" class="secondary-btn">📊 Statistik</button>
-        <button id="resetStatsBtn" type="button" class="secondary-btn">🔄 Zähler reset</button>
-        <label class="secondary-btn" style="display:inline-flex;align-items:center;gap:6px;">
+        <button id="sortCategoriesBtn" type="button" class="secondary-btn" data-tooltip="Reihenfolge der Kategorien per Drag & Drop festlegen">↕️ Kategorien sortieren</button>
+        <button id="exportBtn" type="button" class="secondary-btn" data-tooltip="Alle Favoriten als JSON-Datei herunterladen">⬇️ Export</button>
+        <button id="importBtn" type="button" class="secondary-btn" data-tooltip="Favoriten aus einer JSON-Datei einspielen oder zusammenführen">⬆️ Import</button>
+        <button id="toggleStatsBtn" type="button" class="secondary-btn" data-tooltip="Besuchsstatistik aller Links ein-/ausblenden">📊 Statistik</button>
+        <button id="resetStatsBtn" type="button" class="secondary-btn" data-tooltip="Alle Besuchszähler auf 0 zurücksetzen">🔄 Zähler reset</button>
+        <label class="secondary-btn" style="display:inline-flex;align-items:center;gap:6px;" data-tooltip="Änderungen automatisch als JSON-Backup speichern">
           Auto-Export
           <input id="autoExportToggle" type="checkbox" checked>
         </label>
-        <a class="secondary-btn help-btn" href="./BEDIENUNGSANLEITUNG.pdf" target="_blank" rel="noopener noreferrer">❓ Hilfe</a>
+        <label class="secondary-btn" style="display:inline-flex;align-items:center;gap:6px;" data-tooltip="Kacheln innerhalb der Kategorie nach der Besuchsanzahl sortieren">
+          Häufigkeit
+          <input id="sortByFreqToggle" type="checkbox">
+        </label>
+        <a class="secondary-btn help-btn" href="./BEDIENUNGSANLEITUNG.pdf" target="_blank" rel="noopener noreferrer" data-tooltip="Bedienungsanleitung als PDF öffnen">❓ Hilfe</a>
         <input id="importFileInput" type="file" accept="application/json,.json" hidden>
       </div>
     </section>

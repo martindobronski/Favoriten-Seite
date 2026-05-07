@@ -1,6 +1,7 @@
 const STORAGE_KEY = "favorite-links-v1";
 const CATEGORY_ORDER_KEY = "favorite-category-order-v1";
 const VISIT_COUNTS_KEY = "favorite-visit-counts-v1";
+const SORT_BY_FREQ_KEY = "favorite-sort-by-freq-v1";
 const MOST_VISITED_CATEGORY = "Am häufigsten besucht";
 const MOST_VISITED_LIMIT = 6;
 
@@ -136,6 +137,7 @@ let pendingCategoryOrder = [];
 let searchQuery = "";
 let hasChanges = false;
 let statsVisible = false;
+let sortByFreq = (() => { try { return localStorage.getItem(SORT_BY_FREQ_KEY) === 'true'; } catch { return false; } })();
 // Suppress initial auto-export during first load; enable after initialization completes
 autoExportSuppressed = true;
 
@@ -1121,6 +1123,12 @@ function render() {
         groupedLinks.get(category).push(link);
     });
 
+    if (sortByFreq) {
+        for (const items of groupedLinks.values()) {
+            items.sort((a, b) => (visitCounts[b.id] || 0) - (visitCounts[a.id] || 0));
+        }
+    }
+
     const mostVisitedLinks = getMostVisitedLinks();
     const displayMostVisited = q ?
         mostVisitedLinks.filter(link =>
@@ -1169,6 +1177,16 @@ if (autoExportToggle) {
     autoExportEnabled = !!autoExportToggle.checked;
     autoExportToggle.addEventListener('change', (e) => {
         setAutoExportEnabled(!!e.target.checked);
+    });
+}
+
+const sortByFreqToggle = document.getElementById('sortByFreqToggle');
+if (sortByFreqToggle) {
+    sortByFreqToggle.checked = sortByFreq;
+    sortByFreqToggle.addEventListener('change', (e) => {
+        sortByFreq = !!e.target.checked;
+        try { localStorage.setItem(SORT_BY_FREQ_KEY, String(sortByFreq)); } catch {}
+        render();
     });
 }
 
