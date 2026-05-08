@@ -76,8 +76,8 @@ h1 {
 }
 
 .swatch {
-  width: 19px;
-  height: 19px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
   border: 2.5px solid transparent;
   cursor: pointer;
