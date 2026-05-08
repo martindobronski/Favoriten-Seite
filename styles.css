@@ -183,13 +183,25 @@ button:hover {
 }
 
 #linkForm button[type="submit"] {
-  border: 1px solid #fff;
+  background-color: #1a4a8a;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.9);
   transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
 }
 
 #linkForm button[type="submit"]:hover {
+  background-color: #0f3a73;
+  border-color: rgba(255, 255, 255, 0.25);
   transform: translateY(-2px) scale(1.02);
   box-shadow: 0 20px 44px rgba(0, 0, 0, 0.50);
+}
+
+[data-theme="green"] #linkForm button[type="submit"] {
+  background-color: #0d3d12;
+}
+
+[data-theme="green"] #linkForm button[type="submit"]:hover {
+  background-color: #0a2a0e;
 }
 
 .secondary-btn {
