@@ -245,8 +245,8 @@ button:hover {
 }
 
 .automatic-category-header {
-  background: rgba(var(--primary-rgb), 0.18);
-  border-color: rgba(var(--primary-rgb), 0.4);
+  background: rgba(var(--primary-rgb), 0.10);
+  border-color: rgba(var(--primary-rgb), 0.20);
 }
 
 .category-header-actions {
