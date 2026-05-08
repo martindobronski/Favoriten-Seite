@@ -56,12 +56,12 @@ h1 {
   align-items: baseline;
   gap: 0.85rem;
   flex-wrap: wrap;
+  margin-bottom: 1.4rem;
 }
 
 .page-header h1,
 .page-header .intro {
-  margin-top: 0;
-  margin-bottom: 1.4rem;
+  margin: 0;
 }
 
 /* ── Theme Swatches ──────────────────────────────────────── */
@@ -70,6 +70,9 @@ h1 {
   display: flex;
   gap: 8px;
   align-items: center;
+  border: 1.5px solid #fff;
+  border-radius: 999px;
+  padding: 4px 10px;
 }
 
 .swatch {
