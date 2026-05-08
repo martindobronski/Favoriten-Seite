@@ -179,6 +179,7 @@ button:hover {
 }
 
 #linkForm button[type="submit"] {
+  border: 1px solid #fff;
   transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
 }
 
