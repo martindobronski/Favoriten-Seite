@@ -242,7 +242,7 @@ button:hover {
   align-items: center;
   justify-content: space-between;
   gap: 0.6rem;
-  margin-bottom: 0.65rem;
+  margin-bottom: 1rem;
   padding: 0.55rem 0.7rem;
   border-radius: 10px;
   background: rgba(var(--primary-rgb), 0.12);
