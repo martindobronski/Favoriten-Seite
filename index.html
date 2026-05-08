@@ -95,6 +95,20 @@
       if (searchInput) {
         searchInput.focus();
       }
+
+      const title = document.querySelector('.headerClass');
+      if (title) {
+        title.addEventListener('click', () => {
+          const a = document.createElement('a');
+          a.href = 'Favoriten-Manager.mp4';
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.style.display = 'none';
+          document.body.append(a);
+          a.click();
+          a.remove();
+        });
+      }
     });
   </script>
 
