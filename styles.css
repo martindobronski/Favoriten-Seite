@@ -14,9 +14,9 @@
 }
 
 [data-theme="green"] {
-  --primary: #4caf50;
-  --primary-hover: #388e3c;
-  --primary-rgb: 76, 175, 80;
+  --primary: #2e7d32;
+  --primary-hover: #1b5e20;
+  --primary-rgb: 46, 125, 50;
   --bg: #0a1a0b;
   --bg-start: #0c1f0d;
   --surface: #1c1c1f;
