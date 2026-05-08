@@ -199,6 +199,11 @@ button:hover {
   border-radius: 10px;
 }
 
+#exportBtn,
+#importBtn {
+  background: rgba(var(--primary-rgb), 0.08);
+}
+
 .help-btn {
   border-radius: 10px;
   font: inherit;
