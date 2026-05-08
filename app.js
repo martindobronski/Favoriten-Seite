@@ -926,6 +926,13 @@ function renderCategorySection(category, items, options = {}) {
     heading.textContent = category;
     header.append(heading);
 
+    if (isAutomatic) {
+        const autoBadge = document.createElement("span");
+        autoBadge.className = "auto-badge";
+        autoBadge.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Auto`;
+        header.append(autoBadge);
+    }
+
     if (!isAutomatic) {
         // Rename category button (left of delete)
         const renameCategoryBtn = document.createElement("button");
