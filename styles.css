@@ -115,6 +115,7 @@ h1 {
   padding: 1rem;
   box-shadow: var(--tile-shadow);
   margin-bottom: 1.2rem;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
 }
 
 .panel-actions {
