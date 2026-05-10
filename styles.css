@@ -3,6 +3,8 @@
   --danger: #ef4444;
   --tile-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
   --radius: 14px;
+  --switcher-oval: #ffffff;
+  --swatch-active: #ffffff;
 }
 
 * {
@@ -54,7 +56,7 @@ h1 {
   display: flex;
   gap: 8px;
   align-items: center;
-  border: 1.5px solid #fff;
+  border: 1.5px solid var(--switcher-oval);
   border-radius: 999px;
   padding: 4px 10px;
 }
@@ -89,12 +91,15 @@ h1 {
 .swatch--mono,
 .swatch--mono:hover { background: #333333; }
 
+.swatch--light,
+.swatch--light:hover { background: #ffffff; }
+
 .swatch:focus-visible {
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4);
 }
 
 .swatch.active {
-  border-color: #ffffff;
+  border-color: var(--swatch-active);
 }
 
 .intro {
