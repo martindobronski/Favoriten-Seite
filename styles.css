@@ -1,25 +1,8 @@
 :root {
   color-scheme: dark;
-  --bg: #0a1628;
-  --bg-start: #0d1f38;
-  --surface: #0f1f3a;
-  --text: #e2e8f0;
-  --muted: #94a3b8;
-  --primary: #3b9eff;
-  --primary-hover: #2b8cff;
-  --primary-rgb: 59, 158, 255;
   --danger: #ef4444;
   --tile-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
   --radius: 14px;
-}
-
-[data-theme="green"] {
-  --primary: #1b5e20;
-  --primary-hover: #0d3d12;
-  --primary-rgb: 27, 94, 32;
-  --bg: #0a1a0b;
-  --bg-start: #0c1f0d;
-  --surface: #1c1c1f;
 }
 
 * {
@@ -96,6 +79,9 @@ h1 {
 
 .swatch--green,
 .swatch--green:hover { background: #1a5c2a; }
+
+.swatch--red,
+.swatch--red:hover { background: #6e1515; }
 
 .swatch:focus-visible {
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4);
@@ -195,14 +181,6 @@ button:hover {
   border-color: rgba(255, 255, 255, 0.25);
   transform: translateY(-2px) scale(1.02);
   box-shadow: 0 20px 44px rgba(0, 0, 0, 0.50);
-}
-
-[data-theme="green"] #linkForm button[type="submit"] {
-  background-color: #0d3d12;
-}
-
-[data-theme="green"] #linkForm button[type="submit"]:hover {
-  background-color: #0a2a0e;
 }
 
 .secondary-btn {

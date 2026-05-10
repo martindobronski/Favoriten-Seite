@@ -1,0 +1,58 @@
+/* ── Farbschemata ────────────────────────────────────────────
+ *
+ *  Ein neues Theme hinzufügen:
+ *    1. Block [data-theme="dein-theme"] { ... } kopieren
+ *    2. Farbwerte anpassen
+ *    3. In index.html den Swatch-Kreis ergänzen
+ *    4. Im JS (app.js) wird der data-theme-Wert automatisch
+ *       aus localStorage geladen und gesetzt
+ * ──────────────────────────────────────────────────────────── */
+
+[data-theme="blue"] {
+  --bg: #0a1628;
+  --bg-start: #0d1f38;
+  --surface: #0f1f3a;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --primary: #3b9eff;
+  --primary-hover: #2b8cff;
+  --primary-rgb: 59, 158, 255;
+}
+
+[data-theme="green"] {
+  --bg: #0a1a0b;
+  --bg-start: #0c1f0d;
+  --surface: #0d2b0d;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --primary: #2d7a3a;
+  --primary-hover: #1b5e20;
+  --primary-rgb: 45, 122, 58;
+}
+
+[data-theme="red"] {
+  --bg: #120a0a;
+  --bg-start: #1a0d0d;
+  --surface: #1f0d0d;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --primary: #c62828;
+  --primary-hover: #8e0000;
+  --primary-rgb: 198, 40, 40;
+}
+
+[data-theme="green"] #linkForm button[type="submit"] {
+  background-color: #0d3d12;
+}
+
+[data-theme="green"] #linkForm button[type="submit"]:hover {
+  background-color: #0a2a0e;
+}
+
+[data-theme="red"] #linkForm button[type="submit"] {
+  background-color: #7a1515;
+}
+
+[data-theme="red"] #linkForm button[type="submit"]:hover {
+  background-color: #4a0c0c;
+}
