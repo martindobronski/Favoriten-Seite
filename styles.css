@@ -86,6 +86,9 @@ h1 {
 .swatch--purple,
 .swatch--purple:hover { background: #4a1a5e; }
 
+.swatch--mono,
+.swatch--mono:hover { background: #333333; }
+
 .swatch:focus-visible {
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4);
 }

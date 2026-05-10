@@ -52,6 +52,17 @@
   --primary-rgb: 155, 89, 182;
 }
 
+[data-theme="mono"] {
+  --bg: #0d0d0d;
+  --bg-start: #141414;
+  --surface: #1c1c1c;
+  --text: #e0e0e0;
+  --muted: #888888;
+  --primary: #b0b0b0;
+  --primary-hover: #909090;
+  --primary-rgb: 176, 176, 176;
+}
+
 [data-theme="green"] #linkForm button[type="submit"] {
   background-color: #0d3d12;
 }
@@ -74,4 +85,12 @@
 
 [data-theme="purple"] #linkForm button[type="submit"]:hover {
   background-color: #2e0f3d;
+}
+
+[data-theme="mono"] #linkForm button[type="submit"] {
+  background-color: #333333;
+}
+
+[data-theme="mono"] #linkForm button[type="submit"]:hover {
+  background-color: #222222;
 }
