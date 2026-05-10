@@ -19,13 +19,20 @@
         <h1 class="headerClass">Favoriten</h1>
         <p class="intro">der regelmäßig besuchten Seiten</p>
       </div>
-      <div class="scheme-switcher" role="group" aria-label="Farbschema wählen">
-        <button class="swatch swatch--blue" data-theme="blue" title="Blau" aria-pressed="false"></button>
-        <button class="swatch swatch--green" data-theme="green" title="Grün" aria-pressed="false"></button>
-        <button class="swatch swatch--red" data-theme="red" title="Rot" aria-pressed="false"></button>
-        <button class="swatch swatch--purple" data-theme="purple" title="Purpur" aria-pressed="false"></button>
-        <button class="swatch swatch--mono" data-theme="mono" title="Schwarz/Weiß" aria-pressed="false"></button>
-        <button class="swatch swatch--light" data-theme="light" title="Hell" aria-pressed="false"></button>
+      <div class="scheme-trigger">
+        <button class="scheme-trigger-btn" id="themeTrigger"
+                data-tooltip="Farbschema wechseln"
+                aria-haspopup="true" aria-expanded="false">
+        </button>
+        <div class="scheme-popup" role="group" aria-label="Farbschema wählen">
+          <span class="scheme-hint" id="schemeHint">Blau</span>
+          <button class="swatch swatch--blue" data-theme="blue" data-tooltip="Blau" aria-pressed="false"></button>
+          <button class="swatch swatch--green" data-theme="green" data-tooltip="Grün" aria-pressed="false"></button>
+          <button class="swatch swatch--red" data-theme="red" data-tooltip="Rot" aria-pressed="false"></button>
+          <button class="swatch swatch--purple" data-theme="purple" data-tooltip="Purpur" aria-pressed="false"></button>
+          <button class="swatch swatch--mono" data-theme="mono" data-tooltip="Schwarz/Weiß" aria-pressed="false"></button>
+          <button class="swatch swatch--light" data-theme="light" data-tooltip="Hell" aria-pressed="false"></button>
+        </div>
       </div>
     </header>
 

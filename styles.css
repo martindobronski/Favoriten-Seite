@@ -52,13 +52,63 @@ h1 {
 
 /* ── Theme Swatches ──────────────────────────────────────── */
 
-.scheme-switcher {
+.scheme-trigger {
+  position: relative;
+}
+
+.scheme-trigger::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 8px;
+}
+
+.scheme-trigger-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--switcher-oval);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s ease;
+  outline: none;
+}
+
+.scheme-trigger-btn:hover {
+  transform: scale(1.2);
+}
+
+.scheme-trigger-btn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4);
+}
+
+.scheme-popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
   display: flex;
   gap: 8px;
   align-items: center;
   border: 1.5px solid var(--switcher-oval);
   border-radius: 999px;
-  padding: 4px 10px;
+  padding: 6px 12px;
+  background: var(--surface);
+  box-shadow: var(--tile-shadow);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 100;
+}
+
+.scheme-trigger:hover .scheme-popup,
+.scheme-trigger.is-open .scheme-popup,
+.scheme-popup:hover {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
 }
 
 .swatch {
@@ -100,6 +150,59 @@ h1 {
 
 .swatch.active {
   border-color: var(--swatch-active);
+}
+
+/* ── Tooltip für Theme-Trigger ──────────────────────────── */
+
+.scheme-trigger-btn[data-tooltip] {
+  position: relative;
+}
+
+.scheme-trigger-btn[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  right: calc(100% + 6px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #0f172a;
+  color: #fff;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 999;
+  transition: opacity 0.08s ease;
+}
+
+.scheme-trigger-btn[data-tooltip]:hover::after,
+.scheme-trigger-btn[data-tooltip]:focus-visible::after {
+  opacity: 1;
+}
+
+/* ── Gemeinsamer Hint links neben dem Popup ─────────────── */
+
+.scheme-hint {
+  position: absolute;
+  right: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #0f172a;
+  color: #fff;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  text-align: right;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 999;
+  transition: opacity 0.08s ease;
+}
+
+.scheme-hint.is-visible {
+  opacity: 1;
 }
 
 .intro {
