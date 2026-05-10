@@ -16,3 +16,5 @@ und im pdf Format.
 Die Dateien sollen BEDIENUNGSANLEITUNG.md und BEDIENUNGSANLEITUNG.pdf
 heissen und falls bereits vorhanden, sollen sie überschrieben werden.
 Es sollen alle Vorteile und Funktionalitäten ausführlich erläutert werden.
+Die Umlaute müssen korrekt dargestellt werden!
+Es dürfen keine Symbole verloren gehen!
