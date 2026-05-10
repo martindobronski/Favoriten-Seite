@@ -83,6 +83,9 @@ h1 {
 .swatch--red,
 .swatch--red:hover { background: #6e1515; }
 
+.swatch--purple,
+.swatch--purple:hover { background: #4a1a5e; }
+
 .swatch:focus-visible {
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4);
 }

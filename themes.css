@@ -41,6 +41,17 @@
   --primary-rgb: 198, 40, 40;
 }
 
+[data-theme="purple"] {
+  --bg: #0d0a14;
+  --bg-start: #150d1f;
+  --surface: #1a1028;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --primary: #9b59b6;
+  --primary-hover: #7d3c98;
+  --primary-rgb: 155, 89, 182;
+}
+
 [data-theme="green"] #linkForm button[type="submit"] {
   background-color: #0d3d12;
 }
@@ -55,4 +66,12 @@
 
 [data-theme="red"] #linkForm button[type="submit"]:hover {
   background-color: #4a0c0c;
+}
+
+[data-theme="purple"] #linkForm button[type="submit"] {
+  background-color: #4a1a5e;
+}
+
+[data-theme="purple"] #linkForm button[type="submit"]:hover {
+  background-color: #2e0f3d;
 }
