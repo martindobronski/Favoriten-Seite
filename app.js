@@ -1313,6 +1313,13 @@ searchInput.addEventListener("input", () => {
     render();
 });
 
+searchInput.addEventListener("keydown", event => {
+    if (event.key === "Escape" && searchInput.value) {
+        searchInput.value = "";
+        searchInput.dispatchEvent(new Event("input"));
+    }
+});
+
 linkForm.addEventListener("submit", event => {
     event.preventDefault();
     const title = titleInput.value.trim();
