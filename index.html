@@ -38,9 +38,11 @@
 
     <section class="panel">
       <form id="linkForm" novalidate>
-        <input id="titleInput" type="text" placeholder="Name">
-        <input id="urlInput" type="text" placeholder="URL (z. B. https://example.com)" inputmode="url">
-        <input id="categoryInput" type="text" list="categorySuggestions" placeholder="Kategorie" required>
+        <input id="titleInput" type="text" placeholder="Titel der Kachel eingeben">
+        <span class="input-tooltip" data-tooltip="Taste 'u' zum direkten Anspringen dieses Feldes">
+          <input id="urlInput" type="text" placeholder="URL eingeben" inputmode="url">
+        </span>
+        <input id="categoryInput" type="text" list="categorySuggestions" placeholder="Kategorie erfassen" required>
         <datalist id="categorySuggestions"></datalist>
         <button type="submit">Hinzufügen</button>
       </form>
@@ -65,7 +67,9 @@
     </section>
 
     <div class="search-bar">
-      <input id="searchInput" type="search" placeholder="Favoriten durchsuchen … (einfach tippen)" aria-label="Favoriten durchsuchen (einfach tippen)">
+      <span class="input-tooltip" data-tooltip="Taste 's' oder '/' zum Leeren und Fokussieren">
+        <input id="searchInput" type="search" placeholder="Favoriten durchsuchen" aria-label="Favoriten durchsuchen">
+      </span>
     </div>
 
     <section id="tilesContainer" aria-live="polite"></section>

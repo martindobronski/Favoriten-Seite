@@ -1334,6 +1334,16 @@ document.addEventListener("keydown", event => {
         return;
     }
 
+    if (event.key === "u") {
+        event.preventDefault();
+        searchInput.value = "";
+        searchQuery = "";
+        render();
+        urlInput.focus();
+        urlInput.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+    }
+
     if (event.key.length === 1 && event.key !== " ") {
         event.preventDefault();
         searchInput.value = event.key;
