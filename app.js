@@ -1321,14 +1321,26 @@ searchInput.addEventListener("keydown", event => {
 });
 
 document.addEventListener("keydown", event => {
-    if ((event.key === "s" || event.key === "/") && !event.ctrlKey && !event.metaKey && !event.altKey) {
-        const tag = event.target.tagName;
-        if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    const tag = event.target.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+
+    if (event.key === "/") {
         event.preventDefault();
         searchInput.value = "";
         searchQuery = "";
         render();
         searchInput.focus();
+        return;
+    }
+
+    if (event.key.length === 1 && event.key !== " ") {
+        event.preventDefault();
+        searchInput.value = event.key;
+        searchQuery = event.key.toLowerCase();
+        render();
+        searchInput.focus();
+        searchInput.setSelectionRange(1, 1);
     }
 });
 
