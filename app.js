@@ -1320,6 +1320,18 @@ searchInput.addEventListener("keydown", event => {
     }
 });
 
+document.addEventListener("keydown", event => {
+    if ((event.key === "s" || event.key === "/") && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        const tag = event.target.tagName;
+        if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+        event.preventDefault();
+        searchInput.value = "";
+        searchQuery = "";
+        render();
+        searchInput.focus();
+    }
+});
+
 linkForm.addEventListener("submit", event => {
     event.preventDefault();
     const title = titleInput.value.trim();
