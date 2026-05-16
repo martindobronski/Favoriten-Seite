@@ -1,6 +1,6 @@
 # Bedienungsanleitung – Favoriten-Manager
 
-**Version 1.1 vom 10.05.2026**
+**Version 1.3 vom 16.05.2026**
 
 ---
 
@@ -18,7 +18,7 @@ externen Abhängigkeiten.
 
 - **Lokal & privat** – keine Anmeldung, kein Tracking, keine Cloud
 - **Kein Account nötig** – sofort nutzbar
-- **Auto-Backup** – bei jeder Änderung und beim Schließen
+- **Auto-Backup** – konfigurierbar (sofort oder verzögert), auch beim Schließen
 - **Sechs Farbschemata** – Blau, Grün, Rot, Purpur, Monochrom, Hell
 - **Besuchszähler** – automatische Mitzählung pro Kachel
 - **Statistik-Ansicht** – Balkendiagramm mit Rangliste
@@ -26,6 +26,7 @@ externen Abhängigkeiten.
 - **Import / Export** – JSON-Download als Backup
 - **Suchfunktion** – Echtzeit-Filter über Titel, URL und Kategorie
 - **Tooltip-System** – Erklärungen bei Mauskontakt
+- **Tastaturkürzel** – schnelle Navigation per Tastatur
 
 ---
 
@@ -44,6 +45,8 @@ Das Panel oben auf der Seite enthält alle Steuerelemente:
 
 > Tipp: Sie können auch nur eine Kategorie anlegen, indem Sie
 > Name und URL leer lassen und nur eine Kategorie eingeben.
+
+Das Speichern des Auto-Backups erfolgt nach dem Hinzufügen sofort.
 
 ### Panel-Buttons (von links nach rechts)
 
@@ -92,16 +95,30 @@ Nach einem Klick auf ✏️ öffnet sich ein Dialog. Dort können Sie:
 - Kategorie ändern
 - Mit "Speichern" bestätigen oder "Abbrechen"
 
+Nach dem Speichern wird der Auto-Backup sofort ausgelöst.
+
 ### Kategorie wechseln
 
 Nach einem Klick auf 🏷️ erscheint ein Kontextmenü mit allen anderen
 Kategorien. Ein Klick auf eine Kategorie ordnet die Kachel sofort um.
+Die Änderung wird sofort im Auto-Backup gesichert.
 
 ### Kachel verschieben
 
 Ziehen Sie die Kachel am ↔️-Symbol an eine andere Position
 innerhalb derselben Kategorie. Am unteren Rand einer Kategorie
 können Sie die Kachel auch in eine andere Reihe ablegen.
+
+Während des Ziehens pausiert der Auto-Export-Timer, sodass Sie
+mehrere Verschiebeaktionen in Ruhe durchführen können. Erst wenn
+die Kachel losgelassen wird, startet der 5-Sekunden-Countdown neu.
+
+### Kachel löschen
+
+Klicken Sie auf 🗑. Nach einer Bestätigung wird die Kachel gelöscht.
+Der 5-Sekunden-Timer für den Auto-Backup wird dabei neu gestartet,
+sodass Sie mehrere Kacheln hintereinander löschen können, ohne
+dass ein Download dazwischenkommt.
 
 ---
 
@@ -118,7 +135,20 @@ einen neuen Namen ein. Alle Kacheln dieser Kategorie werden automatisch
 ### Kategorie löschen
 
 Klicken Sie auf 🗑 neben dem Kategorienamen.
-Eine Kategorie kann nur gelöscht werden, wenn sie leer ist.
+
+- **Leere Kategorie**: Die Kategorie wird ohne weitere Rückfragen gelöscht.
+- **Kategorie mit Kacheln**: Es erscheint ein Bestätigungsdialog mit dem
+  Hinweis, wie viele Kacheln betroffen sind. Nach Bestätigung werden alle
+  Kacheln dieser Kategorie automatisch in die Kategorie "Allgemein"
+  verschoben und die leere Kategorie wird gelöscht.
+- **"Allgemein" mit Kacheln**: Enthält "Allgemein" noch Kacheln, kann
+  sie nicht gelöscht werden. Verschieben Sie die Kacheln zuerst in eine
+  andere Kategorie.
+- **"Allgemein" leer**: Die Kategorie kann wie jede andere gelöscht werden.
+  Sie wird automatisch neu angelegt, sobald wieder Kacheln nach
+  "Allgemein" verschoben werden.
+
+Nach dem Löschen einer Kategorie wird der Auto-Backup sofort ausgelöst.
 
 ### Kategorien sortieren
 
@@ -144,7 +174,8 @@ Jeder Klick auf eine Kachel erhöht den internen Besuchszähler.
 ### Einzel-Zurücksetzen
 
 Klicken Sie auf 🔄 unterhalb der Kachel. Ein Bestätigungsdialog
-verhindert versehentliches Zurücksetzen.
+verhindert versehentliches Zurücksetzen. Der Auto-Backup wird sofort
+ausgelöst.
 
 ### Globales Zurücksetzen
 
@@ -212,13 +243,48 @@ zur Verfügung:
 
 ## Auto-Export
 
-Der Auto-Export erstellt bei jeder Änderung (nach 5 Sekunden Pause) und
-beim Schließen der Seite automatisch eine JSON-Sicherung:
+Der Auto-Export erstellt automatisch eine JSON-Sicherung als Backup:
 
-- **Dateiname**: `favoriten-links-backup-JJJJMMTT-hhmmss.json`
-- Enthält alle Links, Kategorien und Besuchszähler
-- Kann über den Toggle "Auto-Export" deaktiviert werden
-- Beim manuellen Export wird der Auto-Timer zurückgesetzt
+### Zeitgesteuerter Export (Standard)
+
+Bei den meisten Änderungen (Löschen einer Kachel, Drag-and-Drop,
+Kategorien sortieren, Import) startet ein 5-Sekunden-Timer. Erst wenn
+in dieser Zeit keine weitere Änderung erfolgt, wird die Backup-Datei
+heruntergeladen. So können mehrere Aktionen hintereinander ausgeführt
+werden, ohne dass ein Download dazwischenkommt.
+
+### Sofort-Export
+
+Bei folgenden Aktionen wird der Backup sofort ohne Verzögerung ausgelöst:
+
+- Neue Kachel hinzufügen
+- Neue Kategorie anlegen
+- Kachel bearbeiten
+- Kategoriewechsel einer Kachel
+- Besuchszähler zurücksetzen (einzeln)
+- Kategorie löschen
+
+### Drag-and-Drop
+
+Während eine Kachel gezogen wird, pausiert der Export-Timer. Erst wenn
+die Kachel losgelassen wird, startet der 5-Sekunden-Countdown neu.
+
+### Beim Schließen der Seite
+
+Beim Verlassen der Seite wird ein finaler Backup erstellt, sofern
+ungespeicherte Änderungen vorliegen und nicht bereits ein Auto-Export
+durchgeführt wurde.
+
+### Deaktivierung
+
+Der Auto-Export kann über den Toggle "Auto-Export" im Panel deaktiviert
+werden.
+
+### Dateiname
+
+`favoriten-links-backup-JJJJMMTT-hhmmss.json`
+
+Enthält alle Links, Kategorien und Besuchszähler im JSON-Format.
 
 ---
 
@@ -250,6 +316,13 @@ Das Suchfeld filtert die Kacheln in Echtzeit:
 - Groß-/Kleinschreibung wird ignoriert
 - Auch die "Am häufigsten besucht"-Kategorie wird gefiltert
 - Bei leerer Suche erscheint "Keine Favoriten gefunden"
+
+### Tastaturkürzel für die Suche
+
+- **Jeder druckbare Buchstabe** springt direkt in das Suchfeld
+- **`/`** leert die Suche und fokussiert das Suchfeld
+- **`u`** leert die Suche und fokussiert das URL-Eingabefeld
+- **`Escape`** löscht den Suchtext im Suchfeld
 
 ---
 
@@ -290,7 +363,9 @@ Erklärungsvideo (`Favoriten-Manager.mp4`) in einem neuen Tab.
 
 - `Tab` / `Shift+Tab` – durch alle Elemente navigieren
 - `Enter` – Button aktivieren / Dialog bestätigen
-- `Escape` – Dialog schließen
+- `Escape` – Dialog schließen, Suche leeren
+- `s` oder `/` – Suchfeld fokussieren und leeren
+- `u` – URL-Eingabefeld fokussieren
 - Bei Seitenstart wird die Suchleiste automatisch fokussiert
 
 ---
@@ -316,51 +391,3 @@ gespeichert:
 - `favorite-visit-counts-v1` – Besuchszähler
 - `favorite-sort-by-freq-v1` – Sortierung nach Häufigkeit (Ein/Aus)
 - `favorite-theme-v1` – gewähltes Farbschema
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-q
