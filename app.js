@@ -573,15 +573,37 @@ function openCategoryMenu(triggerElement, link) {
 // ── CATEGORY DELETION ────────────────────────────────────────────────────────
 
 function deleteEmptyCategory(category) {
-    const hasLinks = links.some(link => normalizeCategory(link.category) === category);
-    if (hasLinks) {
-        alert("Diese Kategorie enthält noch Kacheln und kann nicht gelöscht werden.");
+    const normalized = normalizeCategory(category);
+    const tilesInCategory = links.filter(link => normalizeCategory(link.category) === normalized);
+
+    if (normalized === "Allgemein" && tilesInCategory.length > 0) {
+        alert('Die Kategorie "Allgemein" enthält noch Kacheln. Verschiebe sie zuerst in eine andere Kategorie.');
         return;
     }
 
-    categoryOrder = categoryOrder.filter(item => item !== category);
+    const msg = tilesInCategory.length > 0
+        ? `Kategorie "${category}" löschen? Die ${tilesInCategory.length} Kachel(n) werden nach "Allgemein" verschoben.`
+        : `Kategorie "${category}" löschen?`;
+    if (!confirm(msg)) return;
+
+    if (tilesInCategory.length > 0) {
+        links = links.map(link =>
+            normalizeCategory(link.category) === normalized
+                ? { ...link, category: "Allgemein" }
+                : link
+        );
+        saveLinks(links);
+    }
+
+    categoryOrder = categoryOrder.filter(item => item !== normalized);
     saveCategoryOrder(categoryOrder);
     update();
+
+    if (tilesInCategory.length > 0) {
+        alert(`${tilesInCategory.length} Kachel(n) wurden nach "Allgemein" verschoben.`);
+    }
+
+    exportImmediately();
 }
 
 // ── SORT-CATEGORIES DIALOG ───────────────────────────────────────────────────
@@ -976,7 +998,6 @@ function renderCategorySection(category, items, options = {}) {
         deleteCategoryBtn.type = "button";
         deleteCategoryBtn.textContent = "🗑";
         deleteCategoryBtn.dataset.tooltip = "Kategorie löschen";
-        deleteCategoryBtn.disabled = items.length > 0;
         deleteCategoryBtn.addEventListener("click", event => {
             event.preventDefault();
             event.stopPropagation();
@@ -1386,6 +1407,7 @@ linkForm.addEventListener("submit", event => {
         update();
         linkForm.reset();
         categoryInput.focus();
+        exportImmediately();
         return;
     }
 
