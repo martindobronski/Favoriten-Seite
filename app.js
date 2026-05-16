@@ -67,6 +67,14 @@ function scheduleAutoExport() {
     }, EXPORT_DEBOUNCE_MS);
 }
 
+function exportImmediately() {
+    if (exportDebounceTimer) {
+        clearTimeout(exportDebounceTimer);
+        exportDebounceTimer = null;
+    }
+    exportCurrentState();
+}
+
 function setAutoExportEnabled(value) {
     autoExportEnabled = value;
     localStorage.setItem('autoExportEnabled', String(value));
@@ -477,6 +485,7 @@ function reassignLinkCategory(linkId, nextCategory) {
     }
 
     update();
+    exportImmediately();
 }
 
 // ── EDIT DIALOG ──────────────────────────────────────────────────────────────
@@ -807,6 +816,7 @@ function createTile(link, options = {}) {
         visitCounts[link.id] = 0;
         saveVisitCounts(visitCounts);
         update();
+        exportImmediately();
     });
 
     const deleteBtn = document.createElement("button");
@@ -820,6 +830,7 @@ function createTile(link, options = {}) {
         if (!confirm(`„${link.title}" wirklich löschen?`)) return;
         setLinks(links.filter(item => item.id !== link.id));
         update();
+        scheduleAutoExport();
     });
 
     const changeCategoryBtn = document.createElement("button");
@@ -850,6 +861,10 @@ function createTile(link, options = {}) {
             tile.classList.add("dragging");
             event.dataTransfer.effectAllowed = "move";
             event.dataTransfer.setData("text/plain", link.id);
+            if (exportDebounceTimer) {
+                clearTimeout(exportDebounceTimer);
+                exportDebounceTimer = null;
+            }
         });
 
         dragHandle.addEventListener("dragend", () => {
@@ -858,6 +873,7 @@ function createTile(link, options = {}) {
             document.querySelectorAll(".tile.drag-over").forEach(el => {
                 el.classList.remove("drag-over");
             });
+            scheduleAutoExport();
         });
 
         tile.addEventListener("dragover", event => {
@@ -1401,6 +1417,8 @@ linkForm.addEventListener("submit", event => {
     update();
     linkForm.reset();
     titleInput.focus();
+
+    exportImmediately();
 });
 
 exportBtn.addEventListener("click", () => {
@@ -1568,7 +1586,7 @@ editForm.addEventListener("submit", event => {
     update();
     editDialog.close();
     editingLinkId = null;
-    scheduleAutoExport();
+    exportImmediately();
 });
 
 editCancelBtn.addEventListener("click", () => {
